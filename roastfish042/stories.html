@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写小说也好难，不想干了</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f8faf8;
+            color: #333;
+            padding-bottom: 60px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, #c8f1cd 0%, #a0e2a8 100%);
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .logo-container {
+            width: 90%;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        /* 导航样式 */
+        nav {
+            background: #55b675;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav ul {
+            padding: 0;
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        nav li {
+            padding: 12px 15px;
+        }
+        
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 15px;
+            display: block;
+        }
+        
+        nav a:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* 内容区域 */
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+        
+        .page-title {
+            text-align: center;
+            color: #55b675;
+            margin: 20px 0;
+            font-size: 28px;
+        }
+        
+        .page-subtitle {
+            text-align: center;
+            color: #6a7370;
+            margin-bottom: 30px;
+        }
+        
+        /* 分类筛选按钮 */
+        .category-filter {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+        
+        .filter-btn {
+            background: #ffffff;
+            border: 1px solid #55b675;
+            color: #55b675;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .filter-btn.active {
+            background: #55b675;
+            color: #ffffff;
+        }
+        
+        /* 标签云 */
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+        
+        .tag {
+            background: #e8f5e9;
+            color: #388e3c;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .tag.active {
+            background: #388e3c;
+            color: white;
+        }
+        
+        /* 小说网格 - 只有文字，没有图片 */
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 10px 0;
+        }
+        
+        .story-item {
+    display: flex;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s;
+    border-left: 5px solid #55b675;
+    flex-direction: column;
+        }
+        
+        .story-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+        }
+        
+        .story-title {
+            font-size: 20px;
+            color: #55b675;
+            margin-bottom: 10px;
+        }
+        
+        .story-title i {
+            margin-right: 8px;
+            color: #55b675;
+        }
+        
+        .story-summary {
+            height: 42px;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .story-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 12px;
+        }
+        
+        .story-meta i {
+            margin-right: 5px;
+            color: #55b675;
+        }
+        
+        .story-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        
+        .story-tag {
+            background: #e8f5e9;
+            color: #388e3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px;
+            color: #888;
+            font-size: 16px;
+        }
+        
+        @media (max-width: 768px) {
+            .story-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="/logo.png" alt="logo" width="40%" height="auto">
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html#home">首页</a></li>
+            <li><a href="index.html#games">我的游戏</a></li>
+            <li><a href="huahua.html">绘画作品</a></li>
+            <li><a href="stories.html">小说</a></li>
+            <li><a href="card.html">集章卡</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <h1 class="page-title">求你们来看我包的饺子吧</h1>
+        <p class="page-subtitle">顺便猜猜哪里是醋</p>
+        
+        <!-- 分类筛选 -->
+        <div class="category-filter" id="categoryFilter">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="短篇">短篇</button>
+            <button class="filter-btn" data-filter="中篇">中篇</button>
+        </div>
+        
+        <!-- 标签云 -->
+        <div class="tag-cloud" id="tagCloud"></div>
+        
+        <!-- 小说网格 -->
+        <div class="story-grid" id="storyGrid"></div>
+    </div>
+    
+    <script src="stories.js"></script>
+    <script>
+        // ========== 故事页面脚本 ==========
+        
+        // 当前筛选条件
+        let currentCategory = 'all';
+        let currentTag = 'all';
+        
+        // 获取DOM元素
+        const storyGrid = document.getElementById('storyGrid');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const tagCloud = document.getElementById('tagCloud');
+        
+        /**
+         * 获取所有唯一的标签
+         */
+        function getAllTags() {
+            const allTags = [];
+            storiesData.forEach(story => {
+                if (story.tags && Array.isArray(story.tags)) {
+                    story.tags.forEach(tag => allTags.push(tag));
+                }
+            });
+            return [...new Set(allTags)].sort();
+        }
+        
+        /**
+         * 渲染标签云
+         */
+        function renderTagCloud() {
+            const tags = getAllTags();
+            
+            let html = '<div class="tag ' + (currentTag === 'all' ? 'active' : '') + '" data-tag="all">全部标签</div>';
+            
+            tags.forEach(tag => {
+                html += '<div class="tag ' + (currentTag === tag ? 'active' : '') + '" data-tag="' + tag + '">' + tag + '</div>';
+            });
+            
+            tagCloud.innerHTML = html;
+            
+            // 为每个标签绑定点击事件
+            tagCloud.querySelectorAll('.tag').forEach(tagElement => {
+                tagElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const tagValue = this.getAttribute('data-tag');
+                    
+                    // 更新当前标签
+                    currentTag = tagValue;
+                    
+                    // 更新标签的激活状态
+                    tagCloud.querySelectorAll('.tag').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 重新渲染小说网格
+                    renderStoryGrid();
+                });
+            });
+        }
+        
+        /**
+         * 为分类按钮绑定事件
+         */
+        function bindCategoryButtons() {
+            categoryFilter.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const category = this.getAttribute('data-filter');
+                    
+                    // 更新当前分类
+                    currentCategory = category;
+                    
+                    // 更新按钮的激活状态
+                    categoryFilter.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 重新渲染小说网格
+                    renderStoryGrid();
+                });
+            });
+        }
+        
+        /**
+         * 渲染小说网格（无图片版）
+         */
+        function renderStoryGrid() {
+            // 筛选小说
+            const filteredStories = storiesData.filter(story => {
+                // 分类筛选
+                const categoryMatch = currentCategory === 'all' || story.category === currentCategory;
+                
+                // 标签筛选
+                const tagMatch = currentTag === 'all' || (story.tags && story.tags.includes(currentTag));
+                
+                return categoryMatch && tagMatch;
+            });
+            
+            // 按日期倒序排序
+            const sortedStories = [...filteredStories].sort((a, b) => {
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            // 如果没有结果
+            if (sortedStories.length === 0) {
+                storyGrid.innerHTML = '<div class="no-results">📭 没有找到匹配的小说</div>';
+                return;
+            }
+            
+            // 生成HTML
+                        let html = '';
+            sortedStories.forEach(story => {
+                // 这里判断是短篇还是中篇
+                const chapterInfo = story.chapters ? 
+                    `<span><i class="fas fa-list"></i> 共${story.chapters.length}章</span>` : 
+                    `<span><i class="fas fa-book-open"></i> ${story.words}字</span>`;
+                
+                // 生成卡片HTML
+                html += `
+                    <div class="story-item" data-id="${story.id}">
+                        <h3 class="story-title">${story.title}</h3>
+                        <p class="story-summary">${story.summary}</p>
+                        <div class="story-meta">
+                            <span>${story.date}</span>
+                            <span>${story.category}</span>
+                            ${chapterInfo}  <!-- 这里插入章节信息 -->
+                        </div>
+                    </div>
+                `;
+            });
+            // ▲▲▲ 生成卡片结束 ▲▲▲
+            
+            storyGrid.innerHTML = html;
+            
+            // 绑定点击事件
+            storyGrid.querySelectorAll('.story-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const story = storiesData.find(s => s.id == id);
+                    
+                    // 根据是否有 chapters 跳转到不同页面
+                    if (story.chapters) {
+                        window.location.href = `read-chapter.html?id=${id}&chapter=0`;
+                    } else {
+                        window.location.href = `read.html?id=${id}`;
+                    }
+                });
+            });
+        }
+        
+        /**
+         * 初始化页面
+         */
+        function initPage() {
+            // 检查数据是否加载
+            if (typeof storiesData === 'undefined') {
+                storyGrid.innerHTML = '<div class="no-results">❌ 错误：stories.js 未加载</div>';
+                return;
+            }
+            
+            console.log('数据加载成功，共 ' + storiesData.length + ' 篇小说');
+            
+            // 渲染标签云
+            renderTagCloud();
+            
+            // 绑定分类按钮
+            bindCategoryButtons();
+            
+            // 渲染小说网格
+            renderStoryGrid();
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

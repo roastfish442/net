@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>集章卡</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Helvetica Rounded', Arial, sans-serif;
+            background: #f4f4f4;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #55b675;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instructions {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto 20px;
+            text-align: center;
+        }
+        
+        .stamp-card-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+        
+        .stamp-card {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stamp-slots {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+            padding: 5%;
+        }
+        
+        .stamp-slot {
+            border-radius: 12px;
+            background-color: transparent;
+            transition: background-color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .stamp-slot.hovered {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .stamp-slot.filled {
+            background-color: transparent;
+        }
+        
+        .stamp-slot img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        
+        .sticker-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sticker {
+            width: 80px;
+            height: 80px;
+            cursor: grab;
+            transition: transform 0.2s, filter 0.2s;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.2));
+        }
+        
+        .sticker:hover {
+            transform: scale(1.1);
+            filter: drop-shadow(0 5px 8px rgba(0, 0, 0, 0.3));
+        }
+        
+        .sticker.dragging {
+            opacity: 0.8;
+            transform: scale(1.15);
+            cursor: grabbing;
+        }
+        
+        .reset-btn {
+            margin-top: 30px;
+            padding: 12px 25px;
+            background-color: #55b675;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .reset-btn:hover {
+            background-color: #3c5aa6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .completion-message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #55b675;
+            opacity: 0;
+            transition: opacity 0.5s;
+            text-align: center;
+        }
+        
+        .completion-message.show {
+            opacity: 1;
+        }
+        .selection-hint {
+            margin-top: 10px;
+            margin-bottom: 20px;
+            color: #55b675;
+            font-weight: bold;
+            text-align: center;
+            min-height: 24px;
+        }
+        
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <h1>集章卡</h1>
+        <div class="instructions">
+            <p>点击你玩过的游戏，然后点击集章卡上的空白栏位完成盖章！</p>
+        </div>
+    </header>
+    
+    <div class="stamp-card-container">
+        <!-- 集章卡背景图 -->
+        <img src="/img/card.png" alt="集章卡" class="stamp-card">
+        
+        <!-- 集章卡栏位 -->
+        <div class="stamp-slots">
+            <!-- 第一行 -->
+            <div class="stamp-slot" data-slot="1"></div>
+            <div class="stamp-slot" data-slot="2"></div>
+            <div class="stamp-slot" data-slot="3"></div>
+            <div class="stamp-slot" data-slot="4"></div>
+            
+            <!-- 第二行 -->
+            <div class="stamp-slot" data-slot="5"></div>
+            <div class="stamp-slot" data-slot="6"></div>
+            <div class="stamp-slot" data-slot="7"></div>
+            <div class="stamp-slot" data-slot="8"></div>
+        </div>
+    </div>
+    <div class="selection-hint" id="selectionHint">请先选择一个印章</div>
+    <div class="sticker-container">
+        <!-- 贴纸 -->
+        <img src="/img/neverland.png" alt="永无乡" class="sticker" draggable="true" data-type="stamp1">
+        <img src="/img/moon.png" alt="万物有灵" class="sticker" draggable="true" data-type="stamp2">
+        <img src="/img/star.png" alt="妄想症" class="sticker" draggable="true" data-type="stamp3">
+        <img src="/img/boy.png" alt="思念体" class="sticker" draggable="true" data-type="stamp4">
+        <img src="/img/witch.png" alt="魔女" class="sticker" draggable="true" data-type="stamp5">
+        <img src="/img/email.png" alt="天使信箱" class="sticker" draggable="true" data-type="stamp6">
+        <img src="/img/jealous.png" alt="同人女" class="sticker" draggable="true" data-type="stamp7">
+        <img src="/img/random.png" alt="白月光" class="sticker" draggable="true" data-type="stamp8">
+    </div>
+    
+    <button class="reset-btn">重置集章卡</button>
+<div class="button-container">
+                    <button class="reset-btn" onclick="window.location.href='index.html'">
+                        返回首页
+                    </button>
+                </div>
+    
+    <div class="completion-message" id="completionMessage">
+        恭喜！您已完成所有集章！
+    </div>
+    
+
+
+ <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stickers = document.querySelectorAll('.sticker');
+            const slots = document.querySelectorAll('.stamp-slot');
+            const resetBtn = document.querySelector('.reset-btn');
+            const completionMessage = document.getElementById('completionMessage');
+            const selectionHint = document.getElementById('selectionHint');
+            
+            let selectedSticker = null;
+            
+            // 为每个贴纸添加点击事件
+            stickers.forEach(sticker => {
+                sticker.addEventListener('click', function() {
+                    // 移除之前选中的贴纸的高亮
+                    stickers.forEach(s => s.classList.remove('selected'));
+                    
+                    // 高亮当前选中的贴纸
+                    this.classList.add('selected');
+                    selectedSticker = this;
+                    
+                    // 更新提示信息
+                    selectionHint.textContent = `已选择: ${this.alt}，请点击空白栏位盖章`;
+                });
+            });
+            
+            // 为每个栏位添加点击事件
+            slots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    // 如果没有选择贴纸，则提示用户
+                    if (!selectedSticker) {
+                        selectionHint.textContent = "请先选择一个贴纸";
+                        selectionHint.style.color = "#ff4757";
+                        setTimeout(() => {
+                            selectionHint.style.color = "#55b675";
+                            selectionHint.textContent = "请先选择一个贴纸";
+                        }, 1500);
+                        return;
+                    }
+                    
+                    // 如果栏位已有贴纸，则不执行操作
+                    if (this.querySelector('img')) {
+                        selectionHint.textContent = "此栏位已有贴纸，请选择其他栏位";
+                        selectionHint.style.color = "#ff4757";
+                        setTimeout(() => {
+                            selectionHint.style.color = "#55b675";
+                            selectionHint.textContent = `已选择: ${selectedSticker.alt}，请点击空白栏位盖章`;
+                        }, 1500);
+                        return;
+                    }
+                    
+                    // 创建新的贴纸元素
+                    const newStamp = selectedSticker.cloneNode(true);
+                    newStamp.classList.remove('sticker');
+                    newStamp.classList.remove('selected');
+                    newStamp.style.cursor = 'default';
+                    
+                    // 添加到栏位
+                    this.appendChild(newStamp);
+                    this.classList.add('filled');
+                    
+                    // 重置选择
+                    stickers.forEach(s => s.classList.remove('selected'));
+                    selectedSticker = null;
+                    selectionHint.textContent = "请先选择一个贴纸";
+                    
+                    // 检查是否所有栏位都已填充
+                    checkCompletion();
+                });
+                
+                // 添加悬停效果
+                slot.addEventListener('mouseover', function() {
+                    if (selectedSticker && !this.querySelector('img')) {
+                        this.classList.add('hovered');
+                    }
+                });
+                
+                slot.addEventListener('mouseout', function() {
+                    this.classList.remove('hovered');
+                });
+            });
+            
+            // 重置按钮功能
+            resetBtn.addEventListener('click', function() {
+                slots.forEach(slot => {
+                    slot.classList.remove('filled');
+                    slot.classList.remove('hovered');
+                    const stamp = slot.querySelector('img');
+                    if (stamp) {
+                        slot.removeChild(stamp);
+                    }
+                });
+                
+                // 重置选择
+                stickers.forEach(s => s.classList.remove('selected'));
+                selectedSticker = null;
+                selectionHint.textContent = "请先选择一个贴纸";
+                
+                completionMessage.classList.remove('show');
+            });
+            
+            // 检查是否完成所有集章
+            function checkCompletion() {
+                const allFilled = Array.from(slots).every(slot => slot.classList.contains('filled'));
+                
+                if (allFilled) {
+                    completionMessage.classList.add('show');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

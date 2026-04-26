@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>火考鱼游戏中心
+  
+    </title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        
+        header {
+            background: #c8f1cd;
+            color: #ffffff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+        }
+        
+        nav {
+            background: #55b675;
+            color: #ffffff;
+        }
+        
+        nav ul {
+            padding: 0;
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: auto;
+        }
+        
+        nav li {
+            padding: 15px 20px;
+        }
+        
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .game-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .game-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+        
+        .game-card h3 {
+            margin-top: 10px;
+            color: #e8491d;
+        }
+        
+        .play-btn {
+            display: inline-block;
+            background: #55b675;
+            color: #ffffff;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        
+        footer {
+            background: #35424a;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+        .section-title {
+            color: #55b675;
+            border-bottom: 2px solid #55b675;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+        
+        .blog-card {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .blog-card h3 {
+            color: #55b675;
+        }
+        
+        .date {
+            color: #888;
+            font-size: 0.9em;
+        }
+        
+        .news-container {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .news-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .news-item:last-child {
+            border-bottom: none;
+        }
+        
+        .testimonial {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .testimonial-author {
+            font-weight: bold;
+            color: #55b675;
+        }
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            nav li {
+                padding: 10px 12px;
+            }
+            
+            nav a {
+                font-size: 14px;
+            }
+            
+        }
+        
+        @media (max-width: 480px) {
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            nav li {
+                width: 100%;
+                text-align: center;
+                padding: 8px 0;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <img src="/logo.png" alt="logo" width="40%" height="auto">
+        </div>
+    </header>
+    
+    <nav>
+        <ul>
+    <li><a href="index.html#home"> 首页</a></li>
+            <li><a href="index.html#games">我的游戏</a></li>
+            <li><a href="huahua.html">绘画作品</a></li>
+            <li><a href="stories.html">小说</a></li>
+            <li><a href="card.html">集章卡</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <section id="home">
+         <h2 class="section-title">最新动态</h2>
+          <div class="news-container">
+                   <div class="news-item">
+                    <h3>游戏发布</h3>
+                    <p class="date">2026年3月24日</p>
+                    <p>放置游戏：《全自动高考机器人》发布！</p>
+                </div>
+
+    
+
+                    <div class="news-item">
+                    <h3>欢迎加入QQ群</h3>
+                    <p class="date">2026年3月24日</p>
+                    <p>如果你喜欢我的游戏，欢迎加入QQ群听我画大饼。群号：1087369642</p>
+                </div>
+ </div>
+        
+        </section>
+        
+        <section id="games">
+            <h1 class="section-title">游戏一览</h1>
+            <div class="game-grid">
+                                 <div class="game-card">
+                    <h2>全自动高考机器人</h2>
+                    <p>干掉千人，提高一分！</p>
+                    <a href="kill.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+                   <div class="game-card">
+                    <h2>考不上清北就要一直上高三</h2>
+                    <p>只要学不死，就往死里学！</p>
+                    <a href="dream.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+              
+                  <div class="game-card">
+                    <h2>榕树信箱</h2>
+                    <p>化身网络侦探，一边推理一边吃瓜</p>
+                    <a href="tree.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+                
+                <div class="game-card">
+                    <h2>白月光扭蛋机</h2>
+                    <p>氪命抽卡，复活你的白月光</p>
+                    <a href="random.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+              <!-- 游戏new -->
+                <div class="game-card">
+                    <h2>思念体观察报告（试玩）</h2>
+                    <p>入职思念管理中心，与各式各样的思念体们成为朋友吧！</p>
+                    <a href="boys.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+                <!-- 游戏1 -->
+                <div class="game-card">
+                    <h2>永无乡</h2>
+                    <p>在永无乡中开始新生活吧！</p>
+                    <a href="neverland.html" class="play-btn">游戏简介</a>
+                </div>
+                <!-- 游戏2 -->
+                <div class="game-card">
+                    <h2>同人女爱同人</h2>
+                    <p>同人文手养成游戏，在流量时代尽情体验嫉妒和热度焦虑吧！</p>
+                    <a href="jealous.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+                
+                <!-- 游戏3 -->
+                <div class="game-card">
+                    <h2>不老魔女和她的孩子们</h2>
+                    <p>扮演不老的魔女养孩子的游戏，相遇离别乃人生常态呀。</p>
+                    <a href="witch.html" class="play-btn">开始游戏</a>
+                   
+                </div>
+                
+                <!-- 游戏4-->
+                <div class="game-card">
+                    <h2>万物有灵</h2>
+                    <p>古风悬疑推理游戏，寻找月升山庄多起死亡案件的真相。</p>
+                    <a href="moon.html" class="play-btn">开始游戏</a>
+                </div>
+                 <!-- 游戏5 -->
+                <div class="game-card">
+                    <h2>主角发现她有妄想症</h2>
+                    <p>多重反转的视觉小说游戏，含meta要素。</p>
+                    <a href="star.html" class="play-btn">开始游戏</a>
+                </div>
+                                 <!-- 游6 -->
+                <div class="game-card">
+                    <h2>天使信箱</h2>
+                    <p>收取信件，实现愿望的短篇小游戏。</p>
+                    <a href="email.html" class="play-btn">开始游戏</a>
+                </div>
+                
+                <!-- 可以继续添加更多游戏 -->
+            </div>
+        </section>
+        <section id="games">
+            <h1 class="section-title">小测试</h1>
+                        <div class="game-grid">
+               <div class="game-card">
+                    <h2>测测你的显性人格</h2>
+                    <p>全世界最准的心理测试。</p>
+                    <a href="testplease.html" class="play-btn">开始测试</a>
+                </div>
+  
+               <div class="game-card">
+                    <h2>测测你的隐藏人格</h2>
+                    <p>22个选项，让你更了解你自己。</p>
+                    <a href="test.html" class="play-btn">开始测试</a>
+                </div>
+                </div>
+        </section>
+
+
+        <section id="about">
+            <h2 class="section-title">关于我</h2>
+            <p>我是烤鱼，正在使用twine制作以文字为主的游戏！</p>
+            <p>如果你喜欢的话，欢迎为我提供支持！</p>
+        </section>
+        
+        <section id="contact">
+            <h2 class="section-title">联系我</h2>
+            <p>邮箱：714784864@qq.com</p>
+            <p>小红书：@飞翔的烤鱼</p>
+            <p>微博：@我在永无乡很想你</p>
+            <p>爱发电/B站：@烧烤鳜鱼</p>
+            <p>QQ频道：Roastfish-游戏综合讨论</p>
+        </section>
+    </div>
+    
+    <footer>
+        <p>
+        </p>
+    </footer>
+</body>
+</html>
