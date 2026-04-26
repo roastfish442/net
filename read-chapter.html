@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>章节阅读 · 小说</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: #f8faf8;
+            color: #333;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #c8f1cd 0%, #a0e2a8 100%);
+            padding: 15px 0;
+            text-align: center;
+        }
+        
+        .logo-container {
+            width: 90%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        nav {
+            background: #55b675;
+        }
+        
+        nav ul {
+            padding: 0;
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        nav li {
+            padding: 12px 15px;
+        }
+        
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .story-title {
+            font-size: 32px;
+            color: #55b675;
+            margin-bottom: 10px;
+        }
+        
+        .current-chapter {
+            font-size: 24px;
+            color: #388e3c;
+            margin: 10px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .story-meta {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .story-meta i {
+            margin-right: 5px;
+            color: #55b675;
+        }
+        
+        .chapter-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chapter-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .chapter-btn {
+            padding: 8px 15px;
+            background: #e8f5e9;
+            color: #388e3c;
+            border: 1px solid #55b675;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .chapter-btn:hover {
+            background: #388e3c;
+            color: white;
+        }
+        
+        .chapter-btn.active {
+            background: #55b675;
+            color: white;
+        }
+        
+        .nav-btn {
+            padding: 8px 20px;
+            background: #55b675;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+        }
+        
+        .nav-btn:hover {
+            background: #3d8b52;
+        }
+        
+        .nav-btn.disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .story-content {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #2c3e50;
+            min-height: 300px;
+        }
+        
+        .story-content p {
+            margin: 1.2em 0;
+            text-indent: 2em;
+        }
+        
+        .story-content h1, .story-content h2, .story-content h3 {
+            color: #55b675;
+            margin: 1.5em 0 0.5em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+        }
+        
+        .error {
+            color: #e74c3c;
+            padding: 30px;
+            text-align: center;
+            background: #fdf0ef;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 10px 20px;
+            background: #55b675;
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+        }
+        
+        .back-link i {
+            margin-right: 5px;
+        }
+        
+        /* 进度条 */
+        .progress {
+            color: #888;
+            font-size: 14px;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <img src="/logo.png" alt="logo" width="40%" height="auto">
+        </div>
+    </header>
+    
+   <nav>
+        <ul>
+    <li><a href="index.html#home"> 首页</a></li>
+            <li><a href="index.html#games">我的游戏</a></li>
+            <li><a href="huahua.html">绘画作品</a></li>
+            <li><a href="stories.html">小说</a></li>
+            <li><a href="card.html">集章卡</a></li>
+        </ul>
+    </nav>
+    
+    <div class="container" id="app">
+        <div class="loading">加载中...</div>
+    </div>
+    
+    <script src="stories.js"></script>
+    <script>
+        const app = document.getElementById('app');
+        const urlParams = new URLSearchParams(window.location.search);
+        const storyId = urlParams.get('id');
+        const chapterIndex = urlParams.get('chapter') ? parseInt(urlParams.get('chapter')) : 0;
+        
+        if (!storyId) {
+            app.innerHTML = '<div class="error">❌ 未指定小说ID</div>';
+        } else if (!storiesData) {
+            app.innerHTML = '<div class="error">❌ stories.js 未加载</div>';
+        } else {
+            const story = storiesData.find(s => s.id == storyId);
+            
+            if (!story) {
+                app.innerHTML = '<div class="error">❌ 找不到小说</div>';
+            } else if (!story.chapters) {
+                // 如果是短篇，跳转到原来的阅读页
+                window.location.href = `read.html?id=${storyId}`;
+            } else {
+                // 中篇/长篇：显示章节阅读界面
+                const chapters = story.chapters;
+                const currentChapter = chapters[chapterIndex];
+                
+                if (!currentChapter) {
+                    app.innerHTML = '<div class="error">❌ 找不到章节</div>';
+                } else {
+                    // 显示界面
+                    let chaptersList = '';
+                    chapters.forEach((ch, index) => {
+                        chaptersList += `<a href="?id=${storyId}&chapter=${index}" class="chapter-btn ${index === chapterIndex ? 'active' : ''}">第${index+1}章</a>`;
+                    });
+                    
+                    app.innerHTML = `
+                        <h1 class="story-title">${story.title}</h1>
+                        <div class="story-meta">
+                            <span><i class="far fa-calendar-alt"></i> ${story.date}</span>
+                            <span><i class="fas fa-tags"></i> ${story.category}</span>
+                            <span><i class="fas fa-list"></i> 共${chapters.length}章</span>
+                        </div>
+                        
+                        <div class="chapter-list">
+                            ${chaptersList}
+                        </div>
+                        
+                        <h2 class="current-chapter">${currentChapter.title}</h2>
+                        
+                        <div class="chapter-nav">
+                            <a href="?id=${storyId}&chapter=${chapterIndex - 1}" class="nav-btn ${chapterIndex === 0 ? 'disabled' : ''}">← 上一章</a>
+                            <span class="progress">第 ${chapterIndex + 1} / ${chapters.length} 章</span>
+                            <a href="?id=${storyId}&chapter=${chapterIndex + 1}" class="nav-btn ${chapterIndex === chapters.length - 1 ? 'disabled' : ''}">下一章 →</a>
+                        </div>
+                        
+                        <div class="story-content" id="chapterContent">
+                            <div class="loading">📖 加载章节内容...</div>
+                        </div>
+                        
+                        <div class="chapter-nav" style="margin-top: 40px;">
+                            <a href="?id=${storyId}&chapter=${chapterIndex - 1}" class="nav-btn ${chapterIndex === 0 ? 'disabled' : ''}">← 上一章</a>
+                            <a href="stories.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回列表</a>
+                            <a href="?id=${storyId}&chapter=${chapterIndex + 1}" class="nav-btn ${chapterIndex === chapters.length - 1 ? 'disabled' : ''}">下一章 →</a>
+                        </div>
+                    `;
+                    
+                    // 加载章节内容
+                    const contentDiv = document.getElementById('chapterContent');
+                    
+                    fetch(currentChapter.file)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                            return response.text();
+                        })
+                        .then(text => {
+                            if (!text || text.trim() === '') {
+                                contentDiv.innerHTML = '<p>📭 本章内容为空</p>';
+                                return;
+                            }
+                            contentDiv.innerHTML = marked.parse(text);
+                        })
+                        .catch(err => {
+                            contentDiv.innerHTML = `
+                                <div class="error">
+                                    ❌ 加载失败<br>
+                                    文件: ${currentChapter.file}<br>
+                                    错误: ${err.message}
+                                </div>
+                            `;
+                        });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
