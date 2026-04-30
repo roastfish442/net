@@ -106,13 +106,21 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 	</div>
 	<tw-storydata name="storybox" startnode="3" creator="Twine" creator-version="2.9.1" format="SugarCube" format-version="2.37.3" ifid="B7392115-5856-418E-B2F1-B3B3DFDA3112" options="" tags="" zoom="1" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">
 body {
+max-width: 100%;
     background: #fcf7e8;
    font-family: "Source Han Serif", "思源宋体", "Noto Serif CJK SC", "Noto Serif CJK TC", "Noto Serif CJK", "Times New Roman", serif;
     color: #2e241f;
     padding: 2rem 1.5rem;
     position: relative;
 }
-
+.passage {
+    min-width: fit-content;
+    line-height: 1.75;
+    text-align: left;
+    -webkit-transition: opacity .4s ease-in;
+    -o-transition: opacity .4s ease-in;
+    transition: opacity .4s ease-in;
+}
         
 .start-page {
 margin: 20px auto;       
