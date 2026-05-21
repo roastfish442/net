@@ -738,9 +738,64 @@ if (typeof window !== 'undefined') {
   }
 });
 &lt;/script&gt;</tw-passagedata><tw-passagedata pid="3" name="StoryInit" tags="" position="775,75" size="100,100">&lt;&lt;script&gt;&gt;
-  $(document).on(&#39;verifierPass&#39;, function() {
-    Engine.play(&#39;成功片段&#39;);
-  });
+  // 需要预加载的图片 URL 列表（根据您的实际路径修改）
+  const imageUrls = [
+    &quot;img/A1.jpg&quot;, &quot;img/A2.jpg&quot;, &quot;img/A3.jpg&quot;,
+    &quot;img/A4.jpg&quot;, &quot;img/A5.jpg&quot;, &quot;img/A6.jpg&quot;,
+    &quot;img/A7.jpg&quot;, &quot;img/A8.jpg&quot;, &quot;img/A9.jpg&quot;,
+        &quot;img/B1.jpg&quot;, &quot;img/B2.jpg&quot;, &quot;img/B3.jpg&quot;,
+    &quot;img/B4.jpg&quot;, &quot;img/B5.jpg&quot;, &quot;img/B6.jpg&quot;,
+    &quot;img/B7.jpg&quot;, &quot;img/B8.jpg&quot;, &quot;img/B9.jpg&quot;,
+        &quot;img/C1.jpg&quot;, &quot;img/C2.jpg&quot;, &quot;img/C3.jpg&quot;,
+    &quot;img/C4.jpg&quot;, &quot;img/C5.jpg&quot;, &quot;img/C6.jpg&quot;,
+    &quot;img/C7.jpg&quot;, &quot;img/C8.jpg&quot;, &quot;img/C9.jpg&quot;,
+        &quot;img/D1.jpg&quot;, &quot;img/D2.jpg&quot;, &quot;img/D3.jpg&quot;,
+    &quot;img/D4.jpg&quot;, &quot;img/D5.jpg&quot;, &quot;img/D6.jpg&quot;,
+    &quot;img/D7.jpg&quot;, &quot;img/D8.jpg&quot;, &quot;img/D9.jpg&quot;,
+        &quot;img/E1.jpg&quot;, &quot;img/E2.jpg&quot;, &quot;img/E3.jpg&quot;,
+    &quot;img/E4.jpg&quot;, &quot;img/E5.jpg&quot;, &quot;img/E6.jpg&quot;,
+    &quot;img/E7.jpg&quot;, &quot;img/E8.jpg&quot;, &quot;img/E9.jpg&quot;,
+        &quot;img/F1.jpg&quot;, &quot;img/F2.jpg&quot;, &quot;img/F3.jpg&quot;,
+    &quot;img/F4.jpg&quot;, &quot;img/F5.jpg&quot;, &quot;img/F6.jpg&quot;,
+    &quot;img/F7.jpg&quot;, &quot;img/F8.jpg&quot;, &quot;img/F9.jpg&quot;,
+        &quot;img/G1.jpg&quot;, &quot;img/G2.jpg&quot;, &quot;img/G3.jpg&quot;,
+    &quot;img/G4.jpg&quot;, &quot;img/G5.jpg&quot;, &quot;img/G6.jpg&quot;,
+    &quot;img/G7.jpg&quot;, &quot;img/G8.jpg&quot;, &quot;img/G9.jpg&quot;,
+        &quot;img/H1.jpg&quot;, &quot;img/H2.jpg&quot;, &quot;img/H3.jpg&quot;,
+    &quot;img/H4.jpg&quot;, &quot;img/H5.jpg&quot;, &quot;img/H6.jpg&quot;,
+    &quot;img/H7.jpg&quot;, &quot;img/H8.jpg&quot;, &quot;img/H9.jpg&quot;,
+        &quot;img/I1.jpg&quot;, &quot;img/I2.jpg&quot;, &quot;img/I3.jpg&quot;,
+    &quot;img/I4.jpg&quot;, &quot;img/I5.jpg&quot;, &quot;img/I6.jpg&quot;,
+    &quot;img/I7.jpg&quot;, &quot;img/I8.jpg&quot;, &quot;img/I9.jpg&quot;,
+        &quot;img/J1.jpg&quot;, &quot;img/J2.jpg&quot;, &quot;img/J3.jpg&quot;,
+    &quot;img/J4.jpg&quot;, &quot;img/J5.jpg&quot;, &quot;img/J6.jpg&quot;,
+    &quot;img/J7.jpg&quot;, &quot;img/J8.jpg&quot;, &quot;img/J9.jpg&quot;,
+        &quot;img/G21.jpg&quot;, 
+  ];
+  let loadedCount = 0;
+  const total = imageUrls.length;
+  
+  function preloadImages() {
+    imageUrls.forEach(url =&gt; {
+      const img = new Image();
+      img.onload = () =&gt; {
+        loadedCount++;
+        if (loadedCount === total) {
+          console.log(&quot;所有图片预加载完成&quot;);
+          // 可选：触发一个事件，显示“可以开始”
+        }
+      };
+      img.onerror = () =&gt; {
+        console.warn(&quot;图片加载失败: &quot; + url);
+        loadedCount++; // 避免卡死
+        if (loadedCount === total) {
+          console.log(&quot;预加载完成（含失败）&quot;);
+        }
+      };
+      img.src = url;
+    });
+  }
+  preloadImages();
 &lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="A" tags="" position="675,425" size="100,100">&lt;div id=&quot;verifier2&quot;&gt;&lt;/div&gt;
 
 &lt;script&gt;
