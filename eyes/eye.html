@@ -702,7 +702,68 @@ if (typeof window !== 'undefined') {
 	*******************************************************************************/
 
 	l10nStrings.shareTitle = '分享';
-})();</script><tw-passagedata pid="1" name="StoryInterface" tags="" position="525,25" size="100,100">&lt;div id=&quot;passages&quot; class=&quot;text-display-area&quot;&gt;
+})();
+
+
+(function () {
+    'use strict';
+    // v1.1.0
+    // preload images prior to story startup
+
+    function preloadImage (url, cb) {
+        var img = new Image();
+        img.onload = cb;
+        img.onerror = cb;
+        img.src = url;
+    }
+
+    function preloadAll (urls, cb) {
+        var loaded = 0;
+        var toBeLoaded = urls.length;
+        if (toBeLoaded === 0) {
+            throw new Error("No URLs to preload!");
+        }
+        urls.forEach( function (url) {
+            preloadImage( url, function () {
+                loaded++;
+                if (loaded === toBeLoaded) {
+                    cb();
+                }
+            });
+        });
+    }
+
+    function isInit () {
+        return State.length <= 0;
+    }
+
+
+    function preload () {
+        var list = [].slice.call(arguments).flat(Infinity);
+        var id = isInit() ? LoadScreen.lock() : false;
+        preloadAll( list, function () {
+            if (id) {
+                LoadScreen.unlock(id);
+            }
+        });
+        return id;
+    }
+
+    setup.preload = preload;
+    setup.preload.force = false;
+
+    /* <<preload imageUrls...>> */
+    Macro.add('preload', {
+        handler : function () {
+            if (!isInit() && !setup.preload.force) {
+                return this.error("Attempting to preload images outside of `StoryInit` or similar can cause performance issues. Set `setup.preload.force` to `true` if you want to do it anyway.");
+            }
+            preload(this.args.flat(Infinity).filter( function (url) {
+                return typeof url === 'string';
+            }));
+        }
+    });
+}());</script><tw-passagedata pid="1" name="StoryInterface" tags="" position="525,25" size="100,100">&lt;div id=&quot;passages&quot; class=&quot;text-display-area&quot;&gt;
     &lt;!-- 这里是主要的内容显示区域 --&gt;
   &lt;/div&gt;
 </tw-passagedata><tw-passagedata pid="2" name="蓝色A" tags="" position="575,225" size="100,100">&lt;div id=&quot;verifier&quot;&gt;&lt;/div&gt;
@@ -737,66 +798,16 @@ if (typeof window !== 'undefined') {
     console.log(&#39;没有匹配的规则&#39;);
   }
 });
-&lt;/script&gt;</tw-passagedata><tw-passagedata pid="3" name="StoryInit" tags="" position="775,75" size="100,100">&lt;&lt;script&gt;&gt;
-  // 需要预加载的图片 URL 列表（根据您的实际路径修改）
-  const imageUrls = [
-    &quot;img/A1.jpg&quot;, &quot;img/A2.jpg&quot;, &quot;img/A3.jpg&quot;,
-    &quot;img/A4.jpg&quot;, &quot;img/A5.jpg&quot;, &quot;img/A6.jpg&quot;,
-    &quot;img/A7.jpg&quot;, &quot;img/A8.jpg&quot;, &quot;img/A9.jpg&quot;,
-        &quot;img/B1.jpg&quot;, &quot;img/B2.jpg&quot;, &quot;img/B3.jpg&quot;,
-    &quot;img/B4.jpg&quot;, &quot;img/B5.jpg&quot;, &quot;img/B6.jpg&quot;,
-    &quot;img/B7.jpg&quot;, &quot;img/B8.jpg&quot;, &quot;img/B9.jpg&quot;,
-        &quot;img/C1.jpg&quot;, &quot;img/C2.jpg&quot;, &quot;img/C3.jpg&quot;,
-    &quot;img/C4.jpg&quot;, &quot;img/C5.jpg&quot;, &quot;img/C6.jpg&quot;,
-    &quot;img/C7.jpg&quot;, &quot;img/C8.jpg&quot;, &quot;img/C9.jpg&quot;,
-        &quot;img/D1.jpg&quot;, &quot;img/D2.jpg&quot;, &quot;img/D3.jpg&quot;,
-    &quot;img/D4.jpg&quot;, &quot;img/D5.jpg&quot;, &quot;img/D6.jpg&quot;,
-    &quot;img/D7.jpg&quot;, &quot;img/D8.jpg&quot;, &quot;img/D9.jpg&quot;,
-        &quot;img/E1.jpg&quot;, &quot;img/E2.jpg&quot;, &quot;img/E3.jpg&quot;,
-    &quot;img/E4.jpg&quot;, &quot;img/E5.jpg&quot;, &quot;img/E6.jpg&quot;,
-    &quot;img/E7.jpg&quot;, &quot;img/E8.jpg&quot;, &quot;img/E9.jpg&quot;,
-        &quot;img/F1.jpg&quot;, &quot;img/F2.jpg&quot;, &quot;img/F3.jpg&quot;,
-    &quot;img/F4.jpg&quot;, &quot;img/F5.jpg&quot;, &quot;img/F6.jpg&quot;,
-    &quot;img/F7.jpg&quot;, &quot;img/F8.jpg&quot;, &quot;img/F9.jpg&quot;,
-        &quot;img/G1.jpg&quot;, &quot;img/G2.jpg&quot;, &quot;img/G3.jpg&quot;,
-    &quot;img/G4.jpg&quot;, &quot;img/G5.jpg&quot;, &quot;img/G6.jpg&quot;,
-    &quot;img/G7.jpg&quot;, &quot;img/G8.jpg&quot;, &quot;img/G9.jpg&quot;,
-        &quot;img/H1.jpg&quot;, &quot;img/H2.jpg&quot;, &quot;img/H3.jpg&quot;,
-    &quot;img/H4.jpg&quot;, &quot;img/H5.jpg&quot;, &quot;img/H6.jpg&quot;,
-    &quot;img/H7.jpg&quot;, &quot;img/H8.jpg&quot;, &quot;img/H9.jpg&quot;,
-        &quot;img/I1.jpg&quot;, &quot;img/I2.jpg&quot;, &quot;img/I3.jpg&quot;,
-    &quot;img/I4.jpg&quot;, &quot;img/I5.jpg&quot;, &quot;img/I6.jpg&quot;,
-    &quot;img/I7.jpg&quot;, &quot;img/I8.jpg&quot;, &quot;img/I9.jpg&quot;,
-        &quot;img/J1.jpg&quot;, &quot;img/J2.jpg&quot;, &quot;img/J3.jpg&quot;,
-    &quot;img/J4.jpg&quot;, &quot;img/J5.jpg&quot;, &quot;img/J6.jpg&quot;,
-    &quot;img/J7.jpg&quot;, &quot;img/J8.jpg&quot;, &quot;img/J9.jpg&quot;,
-        &quot;img/G21.jpg&quot;, 
-  ];
-  let loadedCount = 0;
-  const total = imageUrls.length;
-  
-  function preloadImages() {
-    imageUrls.forEach(url =&gt; {
-      const img = new Image();
-      img.onload = () =&gt; {
-        loadedCount++;
-        if (loadedCount === total) {
-          console.log(&quot;所有图片预加载完成&quot;);
-          // 可选：触发一个事件，显示“可以开始”
-        }
-      };
-      img.onerror = () =&gt; {
-        console.warn(&quot;图片加载失败: &quot; + url);
-        loadedCount++; // 避免卡死
-        if (loadedCount === total) {
-          console.log(&quot;预加载完成（含失败）&quot;);
-        }
-      };
-      img.src = url;
-    });
-  }
-  preloadImages();
-&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="A" tags="" position="675,425" size="100,100">&lt;div id=&quot;verifier2&quot;&gt;&lt;/div&gt;
+&lt;/script&gt;</tw-passagedata><tw-passagedata pid="3" name="StoryInit" tags="" position="775,75" size="100,100">&lt;&lt;preload &#39;img/A1.jpg&#39;&#39;img/A2.jpg&#39;&#39;img/A3.jpg&#39;&#39;img/A4.jpg&#39;&#39;img/A5.jpg&#39;&#39;img/A6.jpg&#39;&#39;img/A7.jpg&#39;&#39;img/A8.jpg&#39;&#39;img/A9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/B1.jpg&#39;&#39;img/B2.jpg&#39;&#39;img/B3.jpg&#39;&#39;img/B4.jpg&#39;&#39;img/B5.jpg&#39;&#39;img/B6.jpg&#39;&#39;img/B7.jpg&#39;&#39;img/B8.jpg&#39;&#39;img/B9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/C1.jpg&#39;&#39;img/C2.jpg&#39;&#39;img/C3.jpg&#39;&#39;img/C4.jpg&#39;&#39;img/C5.jpg&#39;&#39;img/C6.jpg&#39;&#39;img/C7.jpg&#39;&#39;img/C8.jpg&#39;&#39;img/C9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/D1.jpg&#39;&#39;img/D2.jpg&#39;&#39;img/D3.jpg&#39;&#39;img/D4.jpg&#39;&#39;img/D5.jpg&#39;&#39;img/D6.jpg&#39;&#39;img/D7.jpg&#39;&#39;img/D8.jpg&#39;&#39;img/D9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/E1.jpg&#39;&#39;img/E2.jpg&#39;&#39;img/E3.jpg&#39;&#39;img/E4.jpg&#39;&#39;img/E5.jpg&#39;&#39;img/E6.jpg&#39;&#39;img/E7.jpg&#39;&#39;img/E8.jpg&#39;&#39;img/E9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/F1.jpg&#39;&#39;img/F2.jpg&#39;&#39;img/F3.jpg&#39;&#39;img/F4.jpg&#39;&#39;img/F5.jpg&#39;&#39;img/F6.jpg&#39;&#39;img/F7.jpg&#39;&#39;img/F8.jpg&#39;&#39;img/F9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/G1.jpg&#39;&#39;img/G2.jpg&#39;&#39;img/G3.jpg&#39;&#39;img/G4.jpg&#39;&#39;img/G5.jpg&#39;&#39;img/G6.jpg&#39;&#39;img/G7.jpg&#39;&#39;img/G8.jpg&#39;&#39;img/G9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/H1.jpg&#39;&#39;img/H2.jpg&#39;&#39;img/H3.jpg&#39;&#39;img/H4.jpg&#39;&#39;img/H5.jpg&#39;&#39;img/H6.jpg&#39;&#39;img/H7.jpg&#39;&#39;img/H8.jpg&#39;&#39;img/H9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/I1.jpg&#39;&#39;img/I2.jpg&#39;&#39;img/I3.jpg&#39;&#39;img/I4.jpg&#39;&#39;img/I5.jpg&#39;&#39;img/I6.jpg&#39;&#39;img/I7.jpg&#39;&#39;img/I8.jpg&#39;&#39;img/I9.jpg&#39;&gt;&gt;
+&lt;&lt;preload &#39;img/J1.jpg&#39;&#39;img/J2.jpg&#39;&#39;img/J3.jpg&#39;&#39;img/J4.jpg&#39;&#39;img/J5.jpg&#39;&#39;img/J6.jpg&#39;&#39;img/J7.jpg&#39;&#39;img/J8.jpg&#39;&#39;img/J9.jpg&#39;&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="A" tags="" position="675,425" size="100,100">&lt;div id=&quot;verifier2&quot;&gt;&lt;/div&gt;
 
 &lt;script&gt;
   const myImages2 = [
