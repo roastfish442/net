@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>换装工作台</title>
+  <style>
+    :root { --ink:#20242b; --muted:#7f8791; --line:#e5e1da; --accent:#db654f; --accent-soft:#f6dfd8; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:32px; color:var(--ink); font-family:"Trebuchet MS","PingFang SC",sans-serif; background:radial-gradient(circle at 10% 0%,#f1e8df 0 18%,transparent 40%),#dfe4e5; }
+    button { font:inherit; }
+    .app { width:min(1180px,100%); margin:auto; background:rgba(248,247,243,.94); border:1px solid rgba(255,255,255,.8); box-shadow:0 28px 80px rgba(49,55,59,.16); }
+    .header { display:flex; align-items:end; justify-content:space-between; gap:24px; padding:30px 34px 22px; border-bottom:1px solid var(--line); }
+    h1 { margin:0; font-size:clamp(26px,4vw,44px); letter-spacing:-.04em; line-height:.95; }
+    .header p { margin:9px 0 0; color:var(--muted); font-size:13px; }
+    .badge { color:var(--accent); font-size:11px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
+    .workspace { display:grid; grid-template-columns:minmax(360px,1fr) minmax(360px,.86fr); gap:34px; padding:34px; }
+    .preview-column,.controls { min-width:0; }
+    .showcase { position:relative; aspect-ratio:4/5; overflow:hidden; background-color:var(--preview-bg,#ece9e2); background-image:none; box-shadow:inset 0 0 0 1px rgba(32,36,43,.08); }
+    .showcase::after { content:"PREVIEW"; position:absolute; top:16px; left:16px; z-index:4; color:rgba(32,36,43,.42); font-size:10px; letter-spacing:.2em; mix-blend-mode:difference; }
+    .layer { position:absolute; inset:0; z-index:1; width:100%; height:100%; object-fit:contain; display:block; pointer-events:none; }
+    .layer-outfit { z-index:2; }
+    .current-label { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:14px; padding-top:13px; border-top:1px solid var(--line); font-size:15px; }
+    .current-label small { color:var(--muted); font-size:11px; letter-spacing:.08em; text-transform:uppercase; }
+    .current-label strong { color:var(--accent); font-weight:600; }
+    .section-title { display:flex; justify-content:space-between; align-items:baseline; margin:0 0 12px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; }
+    .section-title span { color:#b1aaa1; font-weight:400; letter-spacing:0; text-transform:none; }
+    .character-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:28px; }
+    .outfit-view { position:relative; height:440px; border:6px solid #fff; background:#f4f1ec; box-shadow:0 0 0 1px var(--line),0 12px 26px rgba(42,45,49,.08); }
+    .outfit-view::before,.outfit-view::after { content:""; position:absolute; left:0; right:0; height:34px; z-index:3; pointer-events:none; opacity:0; transition:opacity .25s ease; }
+    .outfit-view::before { top:0; background:linear-gradient(to bottom,#f4f1ec 10%,rgba(244,241,236,0)); }
+    .outfit-view::after { bottom:0; background:linear-gradient(to top,#f4f1ec 10%,rgba(244,241,236,0)); }
+    .outfit-view.can-start::before,.outfit-view.can-end::after { opacity:1; }
+    .outfit-grid:focus-visible { outline:2px solid var(--accent); outline-offset:-9px; }
+    .outfit-grid { height:100%; display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:max-content; gap:12px; align-content:start; overflow-y:auto; overscroll-behavior:contain; padding:14px 14px 18px; scrollbar-width:thin; scrollbar-color:#c9c2b8 transparent; }
+    .outfit-grid::-webkit-scrollbar { width:11px; height:11px; }
+    .outfit-grid::-webkit-scrollbar-track { background:transparent; }
+    .outfit-grid::-webkit-scrollbar-thumb { background:#cdc6bb; border:3px solid #f4f1ec; border-radius:99px; }
+    .outfit-grid::-webkit-scrollbar-thumb:hover { background:#b3aa9d; }
+    .char-btn,.outfit-btn { position:relative; overflow:hidden; border:1px solid var(--line); border-radius:0; color:var(--ink); background:#fff; cursor:pointer; transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease; }
+    .char-btn { min-width:0; min-height:70px; padding:12px 6px; display:flex; align-items:center; justify-content:center; }
+    .char-btn span,.outfit-btn span { display:block; margin-top:0; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .outfit-btn { aspect-ratio:1/1; min-height:0; padding:10px; text-align:left; border:3px solid rgba(255,255,255,.98); background:#fff; box-shadow:inset 0 0 0 1px var(--line),0 6px 14px rgba(42,45,49,.06); }
+    .outfit-btn img { width:100%; height:100%; margin:0; object-fit:contain; display:block; background:#f3f1ed; transform:scale(1.1); }
+    .char-btn:hover,.outfit-btn:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 18px rgba(42,45,49,.1); }
+    .char-btn.active,.outfit-btn.active { border:2px solid var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+    .char-btn.active span,.outfit-btn.active span { color:var(--accent); font-weight:700; }
+    .background-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:-2px; margin-bottom:28px; }
+    .background-btn { width:32px; height:32px; padding:0; border:2px solid rgba(32,36,43,.12); border-radius:50%; background:var(--swatch); cursor:pointer; transition:transform .2s ease,box-shadow .2s ease; }
+    .background-btn:hover { transform:translateY(-2px); }
+    .background-btn.active { box-shadow:0 0 0 3px var(--accent-soft),0 0 0 5px var(--accent); }
+    .hint { margin-top:30px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; line-height:1.7; }
+    .hint b { color:var(--ink); }
+    @media (max-width:820px) { body { padding:14px; } .workspace { grid-template-columns:1fr; padding:22px; gap:30px; } .showcase { max-width:540px; margin:auto; } .controls { max-width:620px; width:100%; margin:auto; } }
+    @media (max-width:560px) { body { padding:0; background:#f8f7f3; } .app { min-height:100vh; border:0; box-shadow:none; } .header { padding:24px 18px 18px; } .workspace { padding:18px; gap:26px; } .preview-column { position:sticky; top:0; z-index:5; padding-bottom:12px; background:#f8f7f3; box-shadow:0 8px 16px rgba(32,36,43,.08); } .showcase { aspect-ratio:1/1; max-height:42vh; } .current-label { margin-top:8px; padding-top:8px; } .character-grid { gap:5px; } .char-btn { min-height:58px; padding:9px 3px; } .char-btn span,.outfit-btn span { font-size:11px; } .outfit-view { height:160px; } .outfit-view::before,.outfit-view::after { top:0; bottom:0; height:auto; width:34px; } .outfit-view::before { right:auto; background:linear-gradient(to right,#f4f1ec 12%,rgba(244,241,236,0)); } .outfit-view::after { left:auto; background:linear-gradient(to left,#f4f1ec 12%,rgba(244,241,236,0)); } .outfit-grid { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:124px; align-items:center; align-content:center; gap:12px; overflow-x:auto; overflow-y:hidden; overscroll-behavior-x:contain; overscroll-behavior-y:auto; scroll-snap-type:x proximity; padding:10px 14px; } .outfit-btn { width:100%; max-width:none; min-height:0; padding:8px; border-width:3px; scroll-snap-align:center; } .outfit-btn img { width:100%; height:100%; margin:0; transform:scale(1.15); } }
+    @media (max-width:360px) { .workspace { padding:14px; } .current-label { font-size:13px; } }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div><h1>永无乡娃娃屋</h1><p>为岛民们选择新衣服吧！</p></div>
+      <span class="badge">Neverland</span>
+    </header>
+    <div class="workspace">
+      <section class="preview-column" aria-label="当前造型预览">
+        <div class="showcase" id="showcase">
+          <img id="baseImg" class="layer layer-base" src="" alt="素体" draggable="false" />
+          <img id="outfitImg" class="layer layer-outfit" src="" alt="服装" draggable="false" />
+        </div>
+      </section>
+      <section class="controls" aria-label="换装选项">
+        <div class="section-title">角色 <span></span></div>
+        <div class="character-grid" id="charGrid"></div>
+        <div class="section-title">服装 <span id="outfitCount"></span></div>
+        <div class="outfit-view" id="outfitView">
+          <div class="outfit-grid" id="outfitGrid" tabindex="0" aria-label="服装列表，可左右滑动或滚轮浏览"></div>
+        </div>
+        <div class="section-title">背景 <span></span></div>
+        <div class="background-grid" id="backgroundGrid" aria-label="预览背景颜色"></div>
+      </section>
+    </div>
+  </main>
+  <script>
+    const CHARACTERS = [
+      { id:'c5', name:'岛主', image:'岛主素体.png' }, { id:'c1', name:'铃兰', image:'铃兰素体.png' },
+      { id:'c3', name:'爱丽丝', image:'爱丽丝素体.png' }, { id:'c4', name:'西宫', image:'西宫素体.png' },
+      { id:'c2', name:'林', image:'林素体.png' }
+    ];
+    const OUTFITS = [
+      ['裙子 1','裙子1.png'], ['中式校服','中式校服.png'], ['日式校服','日式校服.png'], ['日式校服男','日式校服男.png'],
+      ['英式校服','英式校服.png'], ['运动服','运动服.png'], ['水手服','水手服.png'], ['背带裤','背带裤.png'],
+      ['超短裤','超短裤.png'], ['红裙子','红裙子.png'], ['洋装','洋装.png'], ['古风服装','古风服装1.png'],
+      ['侦探','侦探.png'], ['魔女','魔女.png'], ['黑色长裙','黑色长裙.png'], ['格兰芬多','格兰芬多.png'],
+      ['斯莱特林','斯莱特林.png'], ['拉文克劳','拉文克劳.png'], ['赫奇帕奇','赫奇帕奇.png'], ['日常装','裙子1.png']
+    ].map((item,index) => ({ id:`o${index + 1}`, name:item[0], image:item[1] }));
+    const BACKGROUNDS = [
+      { id:'paper', name:'雾白', color:'#d3cdc2' }, { id:'pink', name:'樱粉', color:'#e6b9b5' },
+      { id:'mint', name:'薄荷', color:'#b7d0c4' }, { id:'sky', name:'天蓝', color:'#b7cbd8' },
+      { id:'lilac', name:'淡紫', color:'#c8bad1' }, { id:'mist-blue', name:'雾蓝', color:'#8ca6b5' },
+      { id:'sage', name:'灰绿', color:'#829f91' }, { id:'rose', name:'旧玫瑰', color:'#b97678' },
+      { id:'mauve', name:'灰紫', color:'#8e7f9d' }, { id:'night', name:'夜色', color:'#30343b' }
+    ];
+    let currentCharId = CHARACTERS[0].id;
+    let currentOutfitId = OUTFITS[0].id;
+    let currentBackgroundId = BACKGROUNDS[0].id;
+    const baseImg = document.getElementById('baseImg');
+    const outfitImg = document.getElementById('outfitImg');
+    const charGrid = document.getElementById('charGrid');
+    const outfitGrid = document.getElementById('outfitGrid');
+    const outfitView = document.getElementById('outfitView');
+    const backgroundGrid = document.getElementById('backgroundGrid');
+    function updateDisplay() {
+      const character = CHARACTERS.find(item => item.id === currentCharId);
+      const outfit = OUTFITS.find(item => item.id === currentOutfitId);
+      baseImg.src = character.image; outfitImg.src = outfit.image;
+      baseImg.alt = `${character.name} 素体`; outfitImg.alt = `${outfit.name} 服装`;
+      const background = BACKGROUNDS.find(item => item.id === currentBackgroundId);
+      document.getElementById('showcase').style.setProperty('--preview-bg', background.color);
+      document.querySelectorAll('.char-btn').forEach(button => button.classList.toggle('active', button.dataset.charId === currentCharId));
+      document.querySelectorAll('.outfit-btn').forEach(button => button.classList.toggle('active', button.dataset.outfitId === currentOutfitId));
+      document.querySelectorAll('.background-btn').forEach(button => button.classList.toggle('active', button.dataset.backgroundId === currentBackgroundId));
+    }
+    function switchCharacter(id) { if (CHARACTERS.some(item => item.id === id) && id !== currentCharId) { currentCharId = id; updateDisplay(); } }
+    function switchOutfit(id) { if (OUTFITS.some(item => item.id === id) && id !== currentOutfitId) { currentOutfitId = id; updateDisplay(); } }
+    function switchBackground(id) { if (BACKGROUNDS.some(item => item.id === id) && id !== currentBackgroundId) { currentBackgroundId = id; updateDisplay(); } }
+    function renderButtons() {
+      CHARACTERS.forEach(character => {
+        const button = document.createElement('button'); button.className='char-btn'; button.dataset.charId=character.id; button.type='button';
+        button.innerHTML=`<span>${character.name}</span>`;
+        button.addEventListener('click', () => switchCharacter(character.id)); charGrid.appendChild(button);
+      });
+      OUTFITS.forEach(outfit => {
+        const button = document.createElement('button'); button.className='outfit-btn'; button.dataset.outfitId=outfit.id; button.type='button';
+        button.innerHTML=`<img src="${outfit.image}" alt="${outfit.name}" draggable="false">`;
+        button.addEventListener('click', () => switchOutfit(outfit.id)); outfitGrid.appendChild(button);
+      });
+      BACKGROUNDS.forEach(background => {
+        const button = document.createElement('button'); button.className='background-btn'; button.dataset.backgroundId=background.id; button.type='button';
+        button.title = background.name; button.setAttribute('aria-label', `${background.name}背景`); button.style.setProperty('--swatch', background.color);
+        button.addEventListener('click', () => switchBackground(background.id)); backgroundGrid.appendChild(button);
+      });
+    }
+    const outfitPanelQuery = window.matchMedia('(max-width:560px)');
+    function updateOutfitScroll() {
+      const maxX = Math.max(0, outfitGrid.scrollWidth - outfitGrid.clientWidth);
+      const maxY = Math.max(0, outfitGrid.scrollHeight - outfitGrid.clientHeight);
+      outfitView.classList.toggle('can-start', (maxY > 1 && outfitGrid.scrollTop > 1) || (maxX > 1 && outfitGrid.scrollLeft > 1));
+      outfitView.classList.toggle('can-end', (maxY > 1 && outfitGrid.scrollTop < maxY - 1) || (maxX > 1 && outfitGrid.scrollLeft < maxX - 1));
+    }
+  
+    outfitGrid.addEventListener('scroll', updateOutfitScroll, { passive:true });
+    outfitGrid.addEventListener('wheel', event => {
+      const maxX = outfitGrid.scrollWidth - outfitGrid.clientWidth;
+      const maxY = outfitGrid.scrollHeight - outfitGrid.clientHeight;
+      if (maxX > 1) {
+        const delta = event.deltaX || event.deltaY;
+        if (delta === 0) return;
+        event.preventDefault();
+        outfitGrid.scrollLeft += delta;
+      } else if (maxY > 1 && event.deltaY !== 0) {
+        event.preventDefault();
+        outfitGrid.scrollTop += event.deltaY;
+      }
+    }, { passive:false });
+    window.addEventListener('resize', () => { updateOutfitScroll(); updateOutfitLabel(); });
+    window.addEventListener('load', updateOutfitScroll);
+    renderButtons(); updateDisplay(); updateOutfitScroll(); updateOutfitLabel();
+  </script>
+</body>
+</html>
