@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-app="no-js">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport"
+		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+	<meta name="theme-color" content="#070c16" />
+	<title>万物有灵</title>
+	<link rel="stylesheet" href="./assets/style.css" />
+	<script src="./assets/theme.js"></script>
+</head>
+<body>
+	<div class="app">
+		<header class="topbar">
+			<div class="brand">
+				<span class="brand-title" id="brand-title">万物有灵</span>
+				<span class="brand-sub" id="brand-sub"></span>
+			</div>
+			<div class="progress" id="progress"></div>
+		</header>
+
+		<main class="stage" id="stage"></main>
+
+		<nav class="tabbar">
+			<button class="tab" type="button" id="tab-crafting">
+				<span class="tab-dot"></span><span class="tab-text">共鸣仪</span>
+			</button>
+			<button class="tab" type="button" id="tab-cloze">
+				<span class="tab-dot"></span><span class="tab-text">思念还原</span>
+			</button>
+			<button class="tab" type="button" id="tab-archive">
+				<span class="tab-dot"></span><span class="tab-text">案卷</span>
+			</button>
+			<button class="tab" type="button" id="tab-menu">
+				<span class="tab-dot"></span><span class="tab-text">菜单</span>
+			</button>
+		</nav>
+	</div>
+
+	<div class="scrim" id="scrim"></div>
+
+	<section class="sheet" id="sheet" hidden>
+		<header class="sheet-head">
+			<h2 class="sheet-title" id="sheet-title"></h2>
+			<button class="icon-btn" type="button" id="sheet-close">关闭</button>
+		</header>
+		<div class="sheet-body" id="sheet-body"></div>
+	</section>
+
+	<section class="card" id="card" hidden></section>
+
+	<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+	<script src="./assets/data/config.js"></script>
+	<script src="./assets/data/items.js"></script>
+	<script src="./assets/data/clues.js"></script>
+	<script src="./assets/data/events.js"></script>
+	<script src="./assets/data/story.js"></script>
+	<script src="./assets/data/ui.js"></script>
+	<script src="./assets/normalize.js"></script>
+	<script src="./assets/core.js"></script>
+	<script src="./assets/views.js"></script>
+	<script src="./assets/boot.js"></script>
+</body>
+</html>

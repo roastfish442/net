@@ -1,0 +1,1535 @@
+/**
+ * 万物有灵 · 小工具版样式
+ *
+ * 设计说明：
+ *   气质 —— 两套配色：深色「月华清辉」（夜空蓝底 + 月华蓝）与浅色「古籍米黄」（宣纸底 + 褐）。
+ *          两套都是「一个强调色 + 月金/赭石高亮」，切换见 style.css 里的 html[data-theme="paper"]。
+ *   字体 —— 标题用中文宋体（古籍感），正文用系统无衬线（长文可读性优先），不引入网络字体。
+ *   圆角 —— 一套刻度：面板/卡片 18px，按钮/输入 12px，标签/线索 999px（胶囊）。
+ *   间距 —— 因 Chrome 61 的 Flex 不支持 gap，基线统一用子元素 margin，检测通过后才启用 gap。
+ *   兼容 —— Chrome 61 基线层；backdrop-filter 等新能力放在 @supports 里做增强。
+ *   配色 —— 全部收在下面的变量里，换主题只改这一段；正文与强调色的对比度按 WCAG AA 校过。
+ */
+
+/* ---------------------------------------------------------------- 基础 */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+:root {
+	/* ========== 主题一：月夜清辉（默认） ==========
+	 * 想换一套配色：照着下面的 html[data-theme="paper"] 再写一段覆盖即可。
+	 */
+	/* 夜空：从最深的底色到面板、按钮底，一层层提亮 */
+	--ink-900: #070c16;
+	--ink-850: #0c1322;
+	--ink-800: #111a2c;
+	--ink-750: #162036;
+	--ink-700: #1c2743;
+	/* 描边：月光白，比纯白冷一点 */
+	--line: rgba(178, 202, 236, 0.10);
+	--line-strong: rgba(178, 202, 236, 0.20);
+	/* 分隔线 / 进度条槽这类更淡的底 */
+	--hairline: rgba(178, 202, 236, 0.10);
+	--hairline-soft: rgba(178, 202, 236, 0.06);
+	--hairline-faint: rgba(178, 202, 236, 0.04);
+	/* 文字：月白 / 淡月 / 远月 */
+	--paper: #e6ecf7;
+	--paper-dim: #a7b5cb;
+	--paper-faint: #7c8aa2;
+	/* 月华：唯一强调色（按钮、下划线、进度、聚焦框） */
+	--accent: #93b8e6;
+	--accent-rgb: 147, 184, 230;   /* 淡底用 rgba(var(--accent-rgb), α) */
+	--accent-deep: #3f5f8c;
+	--accent-ink: #061020;
+	/* 月金：只给「已查看 / 已获得线索」这类高亮用 */
+	--gold: #dcc48c;
+	--danger: #d98b7c;
+	/* 浮层与遮罩 */
+	--overlay: rgba(12, 19, 34, 0.82);
+	--overlay-strong: rgba(12, 19, 34, 0.96);
+	--scrim: rgba(4, 7, 14, 0.66);
+	--page-outside: #05080f;       /* 宽屏时两侧的底色 */
+	/* 起始页的夜空微光与那轮月亮 */
+	--wash-1: rgba(147, 184, 230, 0.16);
+	--wash-2: rgba(220, 196, 140, 0.07);
+	--wash-edge: rgba(7, 12, 22, 0);
+	--moon-core: #f7faff;
+	--moon-mid: #e2ebfa;
+	--moon-rim: #c2d5f0;
+	--moon-halo: rgba(147, 184, 230, 0.20);
+	--moon-halo-0: rgba(147, 184, 230, 0);
+	--moon-glow: rgba(147, 184, 230, 0.34);
+	--moon-glow-soft: rgba(147, 184, 230, 0.16);
+	/* 线索分类色：clues.js 里按变量名引用 */
+	--clue-person: #7fb0d6;
+	--clue-place: #8ac3a6;
+	--clue-thing: #d9c088;
+	--clue-other: #bda8d6;
+	/* 道具色：items.js 里按变量名引用 */
+	--item-bracelet: #cf8089;
+	--item-jade-xiao: #d8c07c;
+	--item-jade-liu: #8cc79b;
+	--item-jade-feng: #7fa8dc;
+	--item-broken-lute: #a98bd0;
+	--item-lute: #e8c96a;
+	/* 第二案的道具 */
+	--item-dull-bangle: #7f9188;    /* 暗淡的玉镯 */
+	--item-ring: #e4e8f2;           /* 婚戒 */
+	--item-watch: #d9925e;          /* 手表 */
+	--item-cat-charm: #e6a3b5;      /* 小猫挂件 */
+	--item-rabbit-charm: #c9b6e0;   /* 兔子挂件 */
+	--item-bright-bangle: #7fe0c0;  /* 明亮的玉镯 */
+
+	--r-lg: 18px;
+	--r-md: 12px;
+	--r-sm: 8px;
+	--r-pill: 999px;
+
+	--sp-1: 4px;
+	--sp-2: 8px;
+	--sp-3: 12px;
+	--sp-4: 16px;
+	--sp-5: 24px;
+	--sp-6: 32px;
+
+	/* 正文与标题用中文宋体：优先思源宋体，其次各平台自带的宋体 */
+	--font-serif: "Source Han Serif SC", "Source Han Serif CN", "Noto Serif CJK SC",
+		"Noto Serif SC", "Songti SC", "STSong", "SimSun", "宋体", serif;
+	--font-display: var(--font-serif);
+	--font-body: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+		"Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+
+	--app-height: 100vh;
+	--safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+	--safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+	--topbar-h: 54px;
+	--tabbar-h: 56px;
+}
+
+/* ========== 主题二：古籍米黄 ==========
+ * 结构完全一样，只换颜色：宣纸米黄底 + 墨褐字 + 褐色（交互色）+ 赭石（高亮）+ 朱砂（错误）。
+ * 由 assets/theme.js 写在 <html data-theme="paper"> 上，游戏里「菜单 → 界面配色」可切换。
+ */
+html[data-theme="paper"] {
+	--ink-900: #eadfc6;   /* 纸底 */
+	--ink-850: #f3ead8;   /* 顶栏 / 底栏 */
+	--ink-800: #f8f2e2;   /* 面板 / 卡片 */
+	--ink-750: #e6d9ba;
+	--ink-700: #ddcdab;   /* 按钮底 */
+	--line: rgba(92, 72, 42, 0.16);
+	--line-strong: rgba(92, 72, 42, 0.30);
+	--hairline: rgba(92, 72, 42, 0.14);
+	--hairline-soft: rgba(92, 72, 42, 0.09);
+	--hairline-faint: rgba(92, 72, 42, 0.05);
+	--paper: #33291a;     /* 墨褐正文 */
+	--paper-dim: #63553c;
+	--paper-faint: #6f6248;
+	--accent: #6f462a;    /* 褐：宣纸上的墨褐，比靛青更贴米黄底 */
+	--accent-rgb: 111, 70, 42;
+	--accent-deep: #c2a281;
+	--accent-ink: #faf4e8;   /* 褐底上的字色 */
+	--gold: #8c6420;      /* 赭石：已查看 / 已获得 */
+	--danger: #a8402c;    /* 朱砂 */
+	--overlay: rgba(243, 234, 216, 0.86);
+	--overlay-strong: rgba(248, 242, 226, 0.97);
+	--scrim: rgba(58, 45, 26, 0.45);
+	--page-outside: #d8c9a8;
+	--wash-1: rgba(255, 255, 255, 0.55);
+	--wash-2: rgba(170, 132, 62, 0.06);
+	--wash-edge: rgba(234, 223, 198, 0);
+	--clue-person: #8c4230;
+	--clue-place: #2f6b4f;
+	--clue-thing: #8a6220;
+	--clue-other: #6b4a86;
+	--item-bracelet: #9e4a55;
+	--item-jade-xiao: #8a6220;
+	--item-jade-liu: #3f7350;
+	--item-jade-feng: #7a4a2a;
+	--item-broken-lute: #6b4a86;
+	--item-lute: #8a6716;
+	--item-dull-bangle: #5f6f68;
+	--item-ring: #5f6875;
+	--item-watch: #9c5a2e;
+	--item-cat-charm: #a34a63;
+	--item-rabbit-charm: #7b62a0;
+	--item-bright-bangle: #26707a;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+html {
+	touch-action: manipulation;
+	background: var(--ink-900);
+}
+
+body {
+	font-family: var(--font-body);
+	font-size: 17px;
+	line-height: 1.6;
+	color: var(--paper);
+	background: var(--ink-900);
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+	overflow: hidden;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	cursor: pointer;
+}
+
+.selectable,
+input,
+textarea {
+	-webkit-user-select: text;
+	user-select: text;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+/* ---------------------------------------------------------------- 外壳 */
+
+.app {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	height: var(--app-height, 100vh);
+	/* 夜空：顶上是一片冷月色，右上角留一点月晕的暖调 */
+	background:
+		radial-gradient(120% 62% at 50% -6%, var(--wash-1), var(--wash-edge) 60%),
+		radial-gradient(74% 36% at 88% 2%, var(--wash-2), var(--wash-edge) 72%),
+		var(--ink-900);
+}
+
+/* ---------------------------------------------------------------- 顶栏 */
+
+.topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex: 0 0 auto;
+	min-height: var(--topbar-h);
+	padding: var(--sp-2) var(--sp-4);
+	padding-top: calc(var(--sp-2) + var(--safe-top));
+	border-bottom: 1px solid var(--line);
+	background: var(--ink-850);
+}
+
+.brand {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.brand-title {
+	font-family: var(--font-display);
+	font-size: 18px;
+	letter-spacing: 0.14em;
+	line-height: 1.2;
+}
+
+.brand-sub {
+	margin-top: 2px;
+	font-size: 11px;
+	letter-spacing: 0.18em;
+	color: var(--paper-faint);
+}
+
+.progress {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	min-width: 96px;
+}
+
+.progress-label {
+	font-size: 11px;
+	color: var(--paper-faint);
+	letter-spacing: 0.04em;
+}
+
+.progress-track {
+	display: block;
+	width: 96px;
+	height: 4px;
+	margin-top: 6px;
+	border-radius: var(--r-pill);
+	background: var(--hairline);
+	overflow: hidden;
+}
+
+.progress-fill {
+	display: block;
+	height: 100%;
+	width: 0;
+	border-radius: var(--r-pill);
+	background: var(--accent);
+	transition: width 0.4s ease;
+}
+
+/* ---------------------------------------------------------------- 舞台 */
+
+.stage {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-y: contain;
+	padding: var(--sp-5) var(--sp-4) var(--sp-6);
+}
+
+.stage-inner > * + * {
+	margin-top: var(--sp-4);
+}
+
+/* 剧情节点底部的按钮区（对话全部展开后才出现） */
+.story-tail > * + * {
+	margin-top: var(--sp-3);
+}
+
+.stage-head {
+	display: flex;
+	align-items: baseline;
+}
+
+.stage-head > * + * {
+	margin-left: var(--sp-3);
+}
+
+.stage-title {
+	font-family: var(--font-display);
+	font-size: 26px;
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	line-height: 1.3;
+}
+
+.stage-tip {
+	font-size: 13px;
+	color: var(--paper-faint);
+	letter-spacing: 0.04em;
+}
+
+/* 正文 */
+
+.prose > * + *,
+.panel-body > * + *,
+.card-body > * + *,
+.review-card > * + * {
+	margin-top: var(--sp-3);
+}
+
+.para {
+	font-family: var(--font-serif);
+	font-size: 17.5px;
+	line-height: 2;
+	color: var(--paper);
+	text-align: justify;
+	word-break: break-word;
+	/* 中文正文首行缩进两格（短句 / 条目在下面单独取消） */
+	text-indent: 2em;
+}
+
+.scene .para {
+	font-size: 18px;
+}
+
+/* 对话气泡里的文字、版本记录这类短句与条目，不缩进 */
+.bubble .para,
+.changelog .para {
+	text-indent: 0;
+}
+
+.para + .para {
+	margin-top: var(--sp-3);
+}
+
+/* 调查词 */
+
+.word {
+	display: inline;
+	padding: 1px 2px;
+	border-bottom: 1px dashed var(--accent);
+	color: var(--accent);
+	line-height: inherit;
+	transition: color 0.24s ease, border-color 0.24s ease, background-color 0.2s ease;
+}
+
+.word:active {
+	background: rgba(var(--accent-rgb), 0.20);
+}
+
+/* 查看过的调查词换一种颜色，看得出哪些已经查过 */
+.word.seen {
+	color: var(--gold);
+	border-bottom: 1px solid var(--gold);
+}
+
+.link-row {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -4px -8px;
+}
+
+.link-row > * {
+	margin: 0 4px 8px;
+}
+
+/* ---------------------------------------------------------------- 按钮 */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 var(--sp-4);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-md);
+	background: var(--ink-800);
+	color: var(--paper);
+	font-size: 15px;
+	letter-spacing: 0.06em;
+	transition: transform 0.12s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:active {
+	transform: translateY(1px);
+	background: var(--ink-700);
+}
+
+.btn.primary {
+	border-color: var(--accent);
+	background: var(--accent);
+	color: var(--accent-ink);
+	font-weight: 600;
+}
+
+.btn.primary:active {
+	background: #82a9da;
+}
+
+.btn.small {
+	min-height: 34px;
+	padding: 0 var(--sp-3);
+	font-size: 13px;
+}
+
+.btn.wide {
+	display: flex;
+	width: 100%;
+}
+
+.btn.subtle {
+	color: var(--paper-dim);
+	border-color: var(--line);
+}
+
+.btn[disabled] {
+	opacity: 0.42;
+}
+
+.btn:focus,
+.tab:focus,
+.chip:focus,
+.icon-btn:focus,
+.word:focus {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+.actions {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -4px -8px;
+}
+
+.actions > * {
+	margin: 0 4px 8px;
+}
+
+.actions.col {
+	flex-direction: column;
+	margin: 0;
+}
+
+.actions.col > * {
+	margin: 0 0 var(--sp-2);
+}
+
+/* ---------------------------------------------------------------- 标签 */
+
+.chip-row {
+	display: flex;
+	flex-wrap: wrap;
+	margin: 0 -4px -8px;
+}
+
+.chip-row > * {
+	margin: 0 4px 8px;
+}
+
+.chip-row.scroll {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	-webkit-overflow-scrolling: touch;
+	padding-bottom: var(--sp-2);
+}
+
+.chip-row.scroll > * {
+	flex: 0 0 auto;
+}
+
+.chip {
+	min-height: 34px;
+	padding: 0 var(--sp-3);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-pill);
+	background: var(--ink-800);
+	color: var(--paper-dim);
+	font-size: 13px;
+	letter-spacing: 0.04em;
+	transition: transform 0.12s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.chip:active {
+	transform: translateY(1px);
+}
+
+.chip.active {
+	border-color: var(--accent);
+	color: var(--accent);
+	background: rgba(var(--accent-rgb), 0.12);
+}
+
+.chip.clue {
+	display: inline-flex;
+	align-items: center;
+	border-style: solid;
+	background: transparent;
+}
+
+.chip.item {
+	font-weight: 600;
+	background: transparent;
+}
+
+.chip.item.on-table {
+	background: var(--hairline-soft);
+}
+
+.placeholder {
+	display: inline-block;
+	padding: var(--sp-2) 0;
+	font-size: 13px;
+	color: var(--paper-faint);
+}
+
+.hint {
+	font-size: 13px;
+	line-height: 1.8;
+	color: var(--paper-dim);
+}
+
+.panel-sub {
+	font-family: var(--font-display);
+	font-size: 15px;
+	letter-spacing: 0.1em;
+	color: var(--paper-dim);
+}
+
+/* ---------------------------------------------------------------- 对话 */
+
+/* 聊天式对话：对方靠左、自己靠右 */
+.chat {
+	display: flex;
+	flex-direction: column;
+}
+
+.chat > * + * {
+	margin-top: var(--sp-2);
+}
+
+.chat-head {
+	display: flex;
+	align-items: center;
+	margin-bottom: var(--sp-2);
+}
+
+.chat-head > * + * {
+	margin-left: var(--sp-2);
+}
+
+.avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: var(--r-sm);
+	background: rgba(var(--accent-rgb), 0.16);
+	color: var(--accent);
+	font-size: 11px;
+	letter-spacing: 0.02em;
+}
+
+.chat-name {
+	font-size: 12px;
+	letter-spacing: 0.12em;
+	color: var(--paper-faint);
+}
+
+.bubble {
+	padding: var(--sp-3) var(--sp-4);
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	border-top-left-radius: var(--r-sm);
+	background: var(--ink-800);
+	font-size: 16px;
+	line-height: 1.9;
+	color: var(--paper);
+}
+
+.bubble .para {
+	font-size: 16px;
+}
+
+.msg {
+	display: flex;
+	align-items: flex-start;
+	max-width: 100%;
+}
+
+.msg.them {
+	justify-content: flex-start;
+}
+
+.msg.me {
+	justify-content: flex-end;
+}
+
+.msg > * + * {
+	margin-left: var(--sp-2);
+}
+
+.msg .avatar {
+	flex: 0 0 auto;
+	margin-top: 3px;
+}
+
+.msg .bubble {
+	max-width: 80%;
+}
+
+.msg.me .bubble {
+	border-color: var(--accent-deep);
+	border-top-left-radius: var(--r-md);
+	border-top-right-radius: var(--r-sm);
+	background: rgba(var(--accent-rgb), 0.14);
+}
+
+.msg:focus {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+/* 对话进行中：底部「点击继续」提示（把 ui.js 的 story.tapHint 留空即可去掉） */
+.chat-hint {
+	margin-top: var(--sp-3);
+	font-size: 12px;
+	letter-spacing: 0.14em;
+	color: var(--paper-faint);
+	text-align: center;
+	animation: hintBlink 1.6s ease-in-out infinite;
+}
+
+@keyframes hintBlink {
+	0%, 100% { opacity: 0.35; }
+	50% { opacity: 0.9; }
+}
+
+.chat-ask {
+	display: block;
+	width: 100%;
+	min-height: 44px;
+	padding: 0 var(--sp-4);
+	border: 1px dashed var(--accent-deep);
+	border-radius: var(--r-md);
+	color: var(--accent);
+	font-size: 15px;
+	text-align: left;
+	transition: background-color 0.2s ease;
+}
+
+.chat-ask:active {
+	background: rgba(var(--accent-rgb), 0.12);
+}
+
+/* ---------------------------------------------------------------- 起始页 */
+
+.start-screen {
+	padding-top: var(--sp-4);
+}
+
+.start-hero {
+	position: relative;
+	padding-bottom: var(--sp-2);
+}
+
+/* 标题页右上的一轮月亮：纯 CSS（径向渐变当月亮本体，外发光当月晕），不影响排版 */
+.start-hero::after {
+	content: "";
+	position: absolute;
+	top: -12px;
+	right: 2px;
+	width: 72px;
+	height: 72px;
+	border-radius: 50%;
+	background:
+		radial-gradient(circle at 36% 32%,
+			var(--moon-core) 0%,
+			var(--moon-mid) 34%,
+			var(--moon-rim) 58%,
+			var(--moon-halo) 72%,
+			var(--moon-halo-0) 76%);
+	box-shadow:
+		0 0 34px var(--moon-glow),
+		0 0 88px var(--moon-glow-soft);
+	pointer-events: none;
+}
+
+/* 浅色（米黄）主题不画月亮：纸面上那轮月看着突兀，去掉后起始页更干净。
+ * 想让它回来：删掉这条规则，或把 display 改成 block。 */
+html[data-theme="paper"] .start-hero::after {
+	display: none;
+}
+
+.start-eyebrow {
+	font-size: 12px;
+	letter-spacing: 0.32em;
+	color: var(--accent);
+}
+
+.start-title {
+	margin-top: var(--sp-2);
+	font-family: var(--font-display);
+	font-size: 42px;
+	font-weight: 600;
+	letter-spacing: 0.18em;
+	line-height: 1.2;
+}
+
+.start-body .para {
+	font-size: 15px;
+	color: var(--paper-dim);
+	text-align: left;
+}
+
+.changelog {
+	border-top: 1px solid var(--line);
+	padding-top: var(--sp-3);
+}
+
+.changelog summary {
+	font-size: 13px;
+	color: var(--paper-faint);
+	letter-spacing: 0.08em;
+}
+
+.changelog .para {
+	margin-top: var(--sp-2);
+	font-size: 12.5px;
+	line-height: 1.7;
+	color: var(--paper-faint);
+	text-align: left;
+}
+
+/* ---------------------------------------------------------------- 物品卡 */
+
+.item-card {
+	padding: var(--sp-5) var(--sp-4);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-lg);
+	background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.08), rgba(17, 26, 44, 0));
+	background-color: var(--ink-800);
+}
+
+.item-card > * + * {
+	margin-top: var(--sp-3);
+}
+
+.item-tag {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: var(--r-pill);
+	background: rgba(var(--accent-rgb), 0.16);
+	color: var(--accent);
+	font-size: 11px;
+	letter-spacing: 0.1em;
+}
+
+.item-title {
+	font-family: var(--font-display);
+	font-size: 24px;
+	letter-spacing: 0.12em;
+	/* 大字统一用主题的「获得」高亮色，不再一件道具一个颜色 */
+	color: var(--gold);
+}
+
+/* ---------------------------------------------------------------- 填空 */
+
+.cloze-sentence {
+	font-family: var(--font-serif);
+	padding: var(--sp-4);
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	background: var(--ink-800);
+	font-size: 16px;
+	line-height: 2.2;
+	color: var(--paper);
+	word-break: break-word;
+}
+
+.cloze-sentence.wrong {
+	animation: shake 0.4s ease;
+	border-color: var(--danger);
+}
+
+/* 填空面板顶部固定区：句子与已选线索 */
+.cloze-sticky {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	padding-bottom: var(--sp-2);
+	background: var(--ink-850);
+}
+
+.cloze-picked {
+	margin-top: var(--sp-2);
+	font-size: 13px;
+	letter-spacing: 0.04em;
+	color: var(--paper-dim);
+}
+
+.cloze-flash {
+	margin-top: 4px;
+	font-size: 13px;
+	letter-spacing: 0.04em;
+}
+
+.cloze-flash.ok {
+	color: var(--accent);
+}
+
+.cloze-flash.warn {
+	color: var(--danger);
+}
+
+/* 事件选择：换行排列，顺便把标签做小一点 */
+.cloze-events .chip {
+	min-height: 30px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+.blank {
+	display: inline-block;
+	min-width: 58px;
+	margin: 0 2px;
+	padding: 2px 8px;
+	border: 1px dashed var(--accent-deep);
+	border-radius: var(--r-sm);
+	color: var(--accent);
+	font-size: 15px;
+	text-align: center;
+	vertical-align: baseline;
+	transition: background-color 0.2s ease;
+}
+
+.blank:active {
+	background: rgba(var(--accent-rgb), 0.16);
+}
+
+.blank.filled {
+	border-style: solid;
+	background: var(--hairline-faint);
+	font-weight: 600;
+}
+
+.blank.wrong {
+	animation: shake 0.4s ease;
+	border-color: var(--danger);
+	color: var(--danger);
+}
+
+.clue-group > * + * {
+	margin-top: var(--sp-2);
+}
+
+.clue-groups > * + * {
+	margin-top: var(--sp-4);
+}
+
+.clue-group-title {
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: 0.12em;
+	color: var(--paper-faint);
+}
+
+/* 界面里的说明性小字仍用黑体，避免小字号衬线发虚 */
+.hint-card .para,
+.changelog .para,
+.start-body .para {
+	font-family: var(--font-body);
+}
+
+/* ---------------------------------------------------------------- 列表 */
+
+.list > * + * {
+	margin-top: var(--sp-2);
+}
+
+.list-row {
+	display: flex;
+	align-items: center;
+	padding: var(--sp-3);
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	background: var(--ink-800);
+}
+
+.list-row > * + * {
+	margin-left: var(--sp-3);
+}
+
+.list-main {
+	display: flex;
+	flex-direction: column;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.list-title {
+	font-size: 15px;
+	letter-spacing: 0.06em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.list-sub {
+	margin-top: 2px;
+	font-size: 12px;
+	color: var(--paper-faint);
+}
+
+.review > * + * {
+	margin-top: var(--sp-3);
+}
+
+.review-card {
+	padding: var(--sp-3);
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	background: var(--ink-800);
+}
+
+.review-title {
+	font-family: var(--font-display);
+	font-size: 15px;
+	letter-spacing: 0.1em;
+	color: var(--gold);
+}
+
+.review-card .cloze-sentence {
+	border: 0;
+	padding: 0;
+	background: none;
+	font-size: 15px;
+	line-height: 2;
+	color: var(--paper-dim);
+}
+
+/* ---------------------------------------------------------------- 提示卡片 */
+
+.hint-card {
+	border: 1px solid var(--line);
+	border-radius: var(--r-md);
+	background: var(--ink-800);
+	overflow: hidden;
+}
+
+.hint-card > * + * {
+	margin-top: var(--sp-2);
+}
+
+.hint-card summary {
+	padding: var(--sp-3) var(--sp-4);
+	font-size: 15px;
+	letter-spacing: 0.06em;
+	color: var(--paper);
+}
+
+.hint-card .para {
+	padding: 0 var(--sp-4);
+	font-size: 14px;
+	line-height: 1.9;
+	color: var(--paper-dim);
+	text-align: left;
+}
+
+.hint-card > .para:last-child {
+	padding-bottom: var(--sp-3);
+}
+
+.panel-block > * + * {
+	margin-top: var(--sp-3);
+}
+
+/* ---------------------------------------------------------------- 档案 */
+
+.doc {
+	padding: var(--sp-5) var(--sp-4);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-lg);
+	background: var(--ink-800);
+}
+
+.doc-head {
+	display: flex;
+	align-items: baseline;
+	padding-bottom: var(--sp-3);
+	border-bottom: 1px solid var(--line);
+}
+
+.doc-head > * + * {
+	margin-left: var(--sp-3);
+}
+
+.doc-title {
+	font-family: var(--font-display);
+	font-size: 22px;
+	letter-spacing: 0.16em;
+}
+
+.doc-code {
+	font-size: 13px;
+	letter-spacing: 0.14em;
+	color: var(--gold);
+}
+
+.doc-fields {
+	display: grid;
+	grid-template-columns: 4.6em 1fr;
+	grid-gap: var(--sp-2) var(--sp-3);
+	margin: var(--sp-4) 0;
+	font-size: 14px;
+}
+
+.doc-fields dt {
+	color: var(--paper-faint);
+	letter-spacing: 0.08em;
+}
+
+.doc-fields dd {
+	color: var(--paper);
+}
+
+.doc-section {
+	margin-top: var(--sp-4);
+	font-family: var(--font-display);
+	font-size: 15px;
+	letter-spacing: 0.14em;
+	color: var(--accent);
+}
+
+.doc .para {
+	font-size: 15px;
+	line-height: 1.9;
+	color: var(--paper-dim);
+}
+
+.doc-foot {
+	margin-top: var(--sp-5);
+	padding-top: var(--sp-4);
+	border-top: 1px solid var(--line);
+}
+
+.doc-thanks {
+	font-family: var(--font-display);
+	font-size: 17px;
+	letter-spacing: 0.1em;
+	color: var(--paper);
+}
+
+.doc-group {
+	margin-top: var(--sp-2);
+	font-size: 13px;
+	line-height: 1.8;
+	color: var(--paper-faint);
+}
+
+/* ---------------------------------------------------------------- 底部导航 */
+
+.tabbar {
+	display: flex;
+	flex: 0 0 auto;
+	min-height: var(--tabbar-h);
+	padding-bottom: var(--safe-bottom);
+	border-top: 1px solid var(--line);
+	background: var(--ink-850);
+}
+
+.tab {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: var(--tabbar-h);
+	color: var(--paper-dim);
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.tab:active {
+	background: var(--hairline-faint);
+	color: var(--accent);
+}
+
+/* 当前打开的那个面板，对应的一格高亮 */
+.tab.active {
+	color: var(--accent);
+}
+
+/*
+ * 导航上的「月相」：没选中是月牙（右侧被咬掉一块），选中变满月（实心 + 月晕）。
+ * 月牙用径向渐变做：右上角一个透明圆把右下角的实心圆咬掉。
+ */
+.tab-dot {
+	width: 8px;
+	height: 8px;
+	margin-bottom: 5px;
+	border-radius: 50%;
+	background: radial-gradient(circle 3.4px at 66% 50%, rgba(0, 0, 0, 0) 99%, currentColor 100%);
+	opacity: 0.6;
+	transition: opacity 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+
+.tab.active .tab-dot {
+	background: currentColor;
+	box-shadow: 0 0 7px currentColor, 0 0 15px rgba(var(--accent-rgb), 0.35);
+	opacity: 1;
+}
+
+.tab-text {
+	white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- 遮罩与浮层 */
+
+.scrim {
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	z-index: 40;
+	background: var(--scrim);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.24s ease;
+}
+
+.scrim.show {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.sheet {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 50;
+	border-top: 1px solid var(--line-strong);
+	border-top-left-radius: var(--r-lg);
+	border-top-right-radius: var(--r-lg);
+	background: var(--ink-850);
+	box-shadow: 0 -18px 48px rgba(0, 0, 0, 0.45);
+	transform: translateY(102%);
+	transition: transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.sheet {
+	display: flex;
+	flex-direction: column;
+	max-height: calc(var(--app-height, 100vh) * 0.86);
+	padding-bottom: var(--safe-bottom);
+}
+
+/* 详情卡从顶部浮出，读完后关掉即可，不压住下方的正文 */
+.card {
+	position: fixed;
+	left: 10px;
+	right: 10px;
+	top: calc(var(--safe-top) + var(--topbar-h) + 10px);
+	bottom: auto;
+	z-index: 50;
+	max-height: 56%;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-y: contain;
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-lg);
+	background: var(--ink-850);
+	box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+	opacity: 0;
+	transform: translateY(-14px);
+	pointer-events: none;
+	transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.sheet.open {
+	transform: translateY(0);
+}
+
+.card.open {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.sheet-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex: 0 0 auto;
+	padding: var(--sp-4);
+	border-bottom: 1px solid var(--line);
+}
+
+.sheet-title,
+.card-title {
+	font-family: var(--font-display);
+	font-size: 18px;
+	font-weight: 600;
+	letter-spacing: 0.14em;
+}
+
+/* 系统窗口（「记忆读取失败」这类）：标题用错误色，正文不首行缩进、左边对齐 */
+.card.error .card-title {
+	color: var(--danger);
+}
+
+.card.error .popup-body .para {
+	text-indent: 0;
+	text-align: left;
+}
+
+.card.error .popup-actions {
+	margin-top: var(--sp-4);
+}
+
+.sheet-body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-y: contain;
+	padding: var(--sp-4) var(--sp-4) var(--sp-6);
+}
+
+.card-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--sp-4) var(--sp-4) var(--sp-2);
+}
+
+.card-body {
+	padding: 0 var(--sp-4) var(--sp-5);
+}
+
+.card-body > * + * {
+	margin-top: var(--sp-3);
+}
+
+.card-gain {
+	margin-top: var(--sp-3);
+	padding-top: var(--sp-2);
+	border-top: 1px solid var(--line);
+	color: var(--accent);
+	font-size: 13px;
+	letter-spacing: 0.04em;
+}
+
+.icon-btn {
+	min-height: 32px;
+	padding: 0 var(--sp-3);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-sm);
+	color: var(--paper-dim);
+	font-size: 13px;
+	letter-spacing: 0.08em;
+}
+
+.icon-btn:active {
+	background: var(--ink-700);
+}
+
+/* 面板内容 */
+
+.panel-body > * + * {
+	margin-top: var(--sp-3);
+}
+
+.craft-table {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	min-height: 92px;
+	margin: 0 -4px;
+	padding: var(--sp-3);
+	border: 1px dashed var(--line-strong);
+	border-radius: var(--r-md);
+	background: var(--hairline-faint);
+}
+
+.craft-table > * {
+	margin: 4px;
+}
+
+.craft-msg {
+	font-size: 14px;
+	letter-spacing: 0.06em;
+	color: var(--accent);
+}
+
+.craft-result {
+	padding: var(--sp-4);
+	border: 1px solid var(--accent-deep);
+	border-radius: var(--r-md);
+	background: rgba(var(--accent-rgb), 0.08);
+	animation: riseIn 0.3s ease both;
+}
+
+.craft-result > * + * {
+	margin-top: var(--sp-3);
+}
+
+.craft-scene {
+	font-family: var(--font-display);
+	font-size: 19px;
+	letter-spacing: 0.12em;
+}
+
+/* ---------------------------------------------------------------- 提示条 */
+
+.toast {
+	position: fixed;
+	left: 50%;
+	bottom: calc(var(--tabbar-h) + var(--safe-bottom) + 18px);
+	z-index: 60;
+	max-width: 82%;
+	padding: 10px var(--sp-4);
+	border: 1px solid var(--line-strong);
+	border-radius: var(--r-pill);
+	background: var(--ink-700);
+	color: var(--paper);
+	font-size: 14px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 0;
+	transform: translate(-50%, 12px);
+	pointer-events: none;
+	transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.toast.show {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+/* ---------------------------------------------------------------- 动效 */
+
+@keyframes shake {
+	0% { transform: translateX(0); }
+	25% { transform: translateX(-4px); }
+	50% { transform: translateX(4px); }
+	75% { transform: translateX(-2px); }
+	100% { transform: translateX(0); }
+}
+
+@keyframes riseIn {
+	from { opacity: 0; transform: translateY(8px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+.stage-inner.enter {
+	animation: riseIn 0.26s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation: none !important;
+		transition: none !important;
+	}
+}
+
+/* ---------------------------------------------------------------- 增强层 */
+
+@supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+	.topbar,
+	.tabbar {
+		background: var(--overlay);
+		-webkit-backdrop-filter: blur(12px);
+		backdrop-filter: blur(12px);
+	}
+	.sheet,
+	.card {
+		background: var(--overlay-strong);
+		-webkit-backdrop-filter: blur(18px);
+		backdrop-filter: blur(18px);
+	}
+}
+
+/* Flex gap 增强：检测通过后由 JS 在 <html> 上加 .supports-flex-gap */
+.supports-flex-gap .link-row,
+.supports-flex-gap .actions,
+.supports-flex-gap .chip-row {
+	gap: 8px;
+	margin: 0;
+}
+
+.supports-flex-gap .link-row > *,
+.supports-flex-gap .actions > *,
+.supports-flex-gap .chip-row > * {
+	margin: 0;
+}
+
+.supports-flex-gap .actions.col {
+	gap: var(--sp-2);
+}
+
+.supports-flex-gap .chip-row.scroll {
+	gap: var(--sp-2);
+}
+
+.supports-flex-gap .stage-head,
+.supports-flex-gap .doc-head,
+.supports-flex-gap .chat-head,
+.supports-flex-gap .list-row {
+	gap: var(--sp-3);
+}
+
+.supports-flex-gap .stage-head > * + *,
+.supports-flex-gap .doc-head > * + *,
+.supports-flex-gap .chat-head > * + *,
+.supports-flex-gap .msg > * + *,
+.supports-flex-gap .list-row > * + * {
+	margin-left: 0;
+}
+
+.supports-flex-gap .chat-head,
+.supports-flex-gap .msg {
+	gap: var(--sp-2);
+}
+
+.supports-flex-gap .stage-inner > * + *,
+.supports-flex-gap .prose > * + *,
+.supports-flex-gap .panel-body > * + *,
+.supports-flex-gap .card-body > * + *,
+.supports-flex-gap .list > * + *,
+.supports-flex-gap .review > * + *,
+.supports-flex-gap .clue-group > * + *,
+.supports-flex-gap .clue-groups > * + *,
+.supports-flex-gap .panel-block > * + *,
+.supports-flex-gap .item-card > * + *,
+.supports-flex-gap .craft-result > * + *,
+.supports-flex-gap .hint-card > * + * {
+	margin-top: var(--sp-3);
+}
+
+.supports-flex-gap .chat {
+	gap: var(--sp-2);
+}
+
+.supports-flex-gap .chat > * + * {
+	margin-top: 0;
+}
+
+/* ---------------------------------------------------------------- 宽屏（PC 模拟器） */
+
+@media (min-width: 720px) {
+	body {
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		background: var(--page-outside);
+	}
+
+	.app {
+		width: 100%;
+		max-width: 560px;
+		border-left: 1px solid var(--line);
+		border-right: 1px solid var(--line);
+	}
+
+	.scrim,
+	.sheet,
+	.card,
+	.toast {
+		max-width: 560px;
+		left: 50%;
+		right: auto;
+		width: 100%;
+		transform: translateX(-50%);
+	}
+
+	.sheet {
+		transform: translate(-50%, 102%);
+	}
+
+	.card {
+		max-width: 540px;
+		transform: translate(-50%, -14px);
+	}
+
+	.sheet.open {
+		transform: translate(-50%, 0);
+	}
+
+	.card.open {
+		transform: translate(-50%, 0);
+	}
+
+	.toast {
+		transform: translate(-50%, 12px);
+	}
+
+	.toast.show {
+		transform: translate(-50%, 0);
+	}
+}
