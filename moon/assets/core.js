@@ -12,6 +12,7 @@
 	var STORY = window.WYL_STORY;
 	var DETAILS = window.WYL_DETAILS;
 	var CLUES = window.WYL_CLUES;
+	var CLUE_CASE = window.WYL_CLUE_CASE || [];
 	var CLUE_KIND_COLORS = window.WYL_CLUE_KIND_COLORS || {};
 	var CLUE_INDEX = window.WYL_CLUE_INDEX || {};
 	var CLOZE = window.WYL_CLOZE;
@@ -193,6 +194,23 @@
 		return list;
 	}
 
+	/**
+	 * 清除已获得的关键词：写案子编号（如 2）就只保留那一案的词，其余的清掉；
+	 * 写 true 则清空全部。换案时用——第二案开始时把第一案的词收走，
+	 * 思念还原里才不会一直混着上一案的词。认不出属于哪一案的词一律留着。
+	 */
+	function clearClues(keep) {
+		if (!state.clues) state.clues = {};
+		if (keep === true) { state.clues = {}; return; }
+		var keepCase = Number(keep);
+		Object.keys(state.clues).forEach(function (key) {
+			var rc = String(key).split(',');
+			var c = (CLUE_CASE[Number(rc[0])] || [])[Number(rc[1])];
+			if (c === undefined) return;
+			if (c !== keepCase) delete state.clues[key];
+		});
+	}
+
 	// ------------------------------------------------------------ 填空
 
 	function blanksOf(index) {
@@ -357,6 +375,7 @@
 				if (hit) state.clues[clueKey(hit[0], hit[1])] = 1;
 			});
 		}
+		if (fx.clearClues) clearClues(fx.clearClues);
 		if (fx.items || fx.grants) rememberStage2();
 		if (fx.visited) state.visited[fx.visited] = 1;
 		if (fx.done) markDone(fx.done[0], fx.done[1]);
@@ -428,6 +447,8 @@
 
 	function back() {
 		var prev = state.stack.pop();
+		// 作者改过节点名之后，老存档里的这一格可能已经不存在了：跳过它接着往前找
+		while (prev !== undefined && !resolveNode(prev)) prev = state.stack.pop();
 		if (prev === undefined) return;
 		state.node = prev;
 		persist();
@@ -637,13 +658,12 @@
 	function holdForResume() {
 		pending = state.node;
 		state.node = CFG.startNode;
-		state.stack = [];
+		// 导航栈留着：下次点「继续」回到那一页时，事件页上的「返回上一页」还得能用
 	}
 
 	function resume() {
 		var target = pending || CFG.firstNode;
 		pending = null;
-		state.stack = [];
 		go(target, { push: false });
 	}
 
@@ -715,6 +735,7 @@
 		go: go,
 		pendingAdvance: pendingAdvance,
 		back: back,
+		canBack: function () { return state.stack.length > 0; },
 		resume: resume,
 		holdForResume: holdForResume,
 		pendingResume: function () { return !!pending; },

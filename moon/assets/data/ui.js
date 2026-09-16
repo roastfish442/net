@@ -41,7 +41,8 @@ window.WYL_TEXT = {
 
 	story: {
 		cont: '继续',
-		tapHint: '点击继续'
+		tapHint: '点击继续',
+		back: '返回上一页'
 	},
 
 	craft: {

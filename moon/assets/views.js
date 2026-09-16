@@ -419,7 +419,19 @@ function renderItem(node, sameNode) {
 		dom.stage.appendChild(wrap);
 	}
 
-function renderEvent(ev, sameNode) {
+	/**
+	 * 事件页的「返回上一页」：导航栈里有地方可回时才给。
+	 * 事件页是玩家开完案卷 / 共鸣仪之后落脚的地方，也是最容易「走岔」的地方：
+	 * 比如 077 问「要不要修复思念体」那一页，点进别的场景后没有这个按钮就回不去了，
+	 * 而那一页必须当场做选择，流程就断在那里。文案见 ui.js 的 story.back（留空即不显示）。
+	 */
+	function backAction() {
+		if (!A.canBack || !A.canBack()) return null;
+		if (!T.story.back) return null;
+		return { text: T.story.back, onClick: function () { A.back(); } };
+	}
+
+	function renderEvent(ev, sameNode) {
 		var wrap = markEnter(mk('div', 'stage-inner'), sameNode);
 		var st = A.eventState(ev);
 		wrap.appendChild(stageTitle(ev.name));
@@ -462,6 +474,8 @@ function renderEvent(ev, sameNode) {
 			if (b.whenFlag && A.state().flags[b.whenFlag]) return;
 			actions.push(actionButton(b));
 		});
+		var back = backAction();
+		if (back) actions.push(back);
 		if (actions.length) wrap.appendChild(buttonRow(actions));
 
 		dom.stage.appendChild(wrap);

@@ -59,6 +59,8 @@
 	var clueRows = [];
 	var clueIndex = {};
 	var clueOwner = {};
+	// 每条线索属于第几案（记的是声明它的那个场景的案子）——换案时按它清关键词
+	var clueCaseRows = EVENTS.map(function () { return []; });
 
 	EVENTS.forEach(function (ev, i) {
 		clueRows[i] = [];
@@ -75,6 +77,7 @@
 			clueOwner[word] = ev.name;
 			clueIndex[word] = [i, clueRows[i].length];
 			clueRows[i].push(word);
+			clueCaseRows[i].push(Number(ev.case) > 1 ? Number(ev.case) : 1);
 		});
 	});
 
@@ -426,6 +429,7 @@
 	window.WYL_EVENTS = events;
 	window.WYL_DETAILS = details;
 	window.WYL_CLUES = clueRows;
+	window.WYL_CLUE_CASE = clueCaseRows;
 	window.WYL_CLOZE = cloze;
 	window.WYL_CLUE_INDEX = clueIndex;
 	window.WYL_CLUE_KINDS = kindNames;
