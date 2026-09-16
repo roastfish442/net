@@ -50,6 +50,7 @@
 			v: 1,
 			node: CFG.startNode,
 			stack: [],
+			checkpoint: '',     // 还没做完选择的卡点页（story.js 里写了 checkpoint 的页面）
 			clues: {},
 			filled: {},
 			visited: {},
@@ -405,8 +406,24 @@
 		} else {
 			applyEffects(ref.onEnter);
 			applyEffects({ grants: ref.grants });
+			// 卡点页（story.js 里写了 checkpoint 的页面）：记下它，玩家跳去别处之后还能回来；
+			// 一旦走了它给出的某个选项，这个卡点就算做完了，界面上的「返回」也跟着消失。
+			if (ref.checkpoint) state.checkpoint = ref.id;
+			else if (state.checkpoint && isChoiceOf(state.checkpoint, ref.id)) state.checkpoint = '';
 		}
 		return true;
+	}
+
+	/** ref.id 是不是卡点页给出的选项之一（会 / 不会 那种） */
+	function isChoiceOf(checkpointId, targetId) {
+		var node = resolveNode(checkpointId);
+		if (!node) return true;      // 卡点页被改名或删了，就当它已经做完，别再卡着玩家
+		var outs = (node.ref.links || []);
+		if (node.ref.next) outs = outs.concat([node.ref.next]);
+		for (var i = 0; i < outs.length; i++) {
+			if (outs[i] && outs[i].to === targetId) return true;
+		}
+		return false;
 	}
 
 	/** 跳转到某个节点（name 可以是节点名或事件 id） */
@@ -736,6 +753,7 @@
 		pendingAdvance: pendingAdvance,
 		back: back,
 		canBack: function () { return state.stack.length > 0; },
+		checkpoint: function () { return state.checkpoint || ''; },
 		resume: resume,
 		holdForResume: holdForResume,
 		pendingResume: function () { return !!pending; },

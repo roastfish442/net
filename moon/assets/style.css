@@ -1266,6 +1266,17 @@ html[data-theme="paper"] .start-hero::after {
 	padding: var(--sp-4) var(--sp-4) var(--sp-2);
 }
 
+/* 详情卡标题栏右侧的按钮组（返回上一级 / 关闭） */
+.card-tools {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+}
+
+.card-tools > * + * {
+	margin-left: var(--sp-2);
+}
+
 .card-body {
 	padding: 0 var(--sp-4) var(--sp-5);
 }

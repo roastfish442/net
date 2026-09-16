@@ -113,6 +113,14 @@
 		renderedNode = A.nodeName();
 		var keepScroll = sameNode ? dom.stage.scrollTop : 0;
 		clear(dom.stage);
+		// 换页时把详情卡收起来：卡片是「这一页的调查词」弹出来的，跟着翻页留着没意义
+		// （同一页里点词不会走到这里，卡片照旧按「返回 / 关闭」操作）
+		if (!sameNode && cards.length) {
+			cards = [];
+			cardClose = null;
+			if (dom.card) { dom.card.classList.remove('open'); dom.card.hidden = true; }
+			if (!panel && dom.scrim) dom.scrim.classList.remove('show');
+		}
 		if (!node) {
 			dom.stage.appendChild(mk('p', 'para', T.error.badState));
 			dom.stage.scrollTop = 0;
@@ -420,15 +428,18 @@ function renderItem(node, sameNode) {
 	}
 
 	/**
-	 * 事件页的「返回上一页」：导航栈里有地方可回时才给。
-	 * 事件页是玩家开完案卷 / 共鸣仪之后落脚的地方，也是最容易「走岔」的地方：
-	 * 比如 077 问「要不要修复思念体」那一页，点进别的场景后没有这个按钮就回不去了，
-	 * 而那一页必须当场做选择，流程就断在那里。文案见 ui.js 的 story.back（留空即不显示）。
+	 * 「返回」：只在还有一页「必须当场做选择」的卡点没解决时出现。
+	 * 例如 077 问「要不要修复思念体」那一页（story.js 里写了 checkpoint: true），
+	 * 玩家顺手开案卷点进别的场景，事件页上就会出现这个按钮，一点回到那一页；
+	 * 选完之后卡点消掉，平时翻场景不会有这个按钮。
+	 * 文案见 ui.js 的 story.back（留空即不显示）。
 	 */
-	function backAction() {
-		if (!A.canBack || !A.canBack()) return null;
+	function returnAction() {
 		if (!T.story.back) return null;
-		return { text: T.story.back, onClick: function () { A.back(); } };
+		var id = A.checkpoint ? A.checkpoint() : '';
+		if (!id || id === A.nodeName()) return null;
+		if (!A.resolve(id)) return null;
+		return { text: T.story.back, onClick: function () { A.go(id); } };
 	}
 
 	function renderEvent(ev, sameNode) {
@@ -474,7 +485,7 @@ function renderItem(node, sameNode) {
 			if (b.whenFlag && A.state().flags[b.whenFlag]) return;
 			actions.push(actionButton(b));
 		});
-		var back = backAction();
+		var back = returnAction();
 		if (back) actions.push(back);
 		if (actions.length) wrap.appendChild(buttonRow(actions));
 
@@ -519,7 +530,7 @@ function renderItem(node, sameNode) {
 	// ------------------------------------------------------------ 面板：通用
 
 	var panel = null;      // 当前面板（共鸣仪 / 思念还原 / 案卷 / 菜单）
-	var cards = [];        // 详情卡栈
+	var cards = [];        // 详情卡栈：[{ title, text, gained }]
 	var cardClose = null;  // 当前弹出层的关闭回调
 
 function closeLayer() {
@@ -604,21 +615,39 @@ function setActiveTab(id) {
 		return cleaned || String(name);
 	}
 
-	/** 详情卡：点击调查词后弹出的说明，关闭即整层收起 */
+	/**
+	 * 详情卡：点击调查词后弹出的说明。
+	 * 卡里的词还能继续点，所以这里是个栈——卡里点出来的卡叠一层，标题栏出现「返回」，
+	 * 可以一层层退回上一级（「关闭」仍是一次收起整层）。
+	 */
 	function pushDetail(name, title, gained) {
 		var detail = A.details[name];
 		if (!detail) return;
-		cards = [name];
-		var body = mk('div', 'card-body');
-		renderParagraphs(detail.text, body);
-		if (gained && gained.length) {
-			add(body, textEl('p', 'card-gain',
-				(T.toast.clue ? T.toast.clue + '：' : '') + gained.join('、')));
-		}
-		showCard(title || prettyName(name), body);
+		cards.push({ title: title || prettyName(name), text: detail.text, gained: gained });
+		drawCard();
 	}
 
-	/** 关闭弹出层：一律整层收起，不会退回上一层详情 */
+	/** 画栈顶那张卡（有上一级时带上「返回」按钮） */
+	function drawCard() {
+		var top = cards[cards.length - 1];
+		if (!top) return;
+		var body = mk('div', 'card-body');
+		renderParagraphs(top.text, body);
+		if (top.gained && top.gained.length) {
+			add(body, textEl('p', 'card-gain',
+				(T.toast.clue ? T.toast.clue + '：' : '') + top.gained.join('、')));
+		}
+		showCard(top.title, body, cards.length > 1 ? popDetail : null);
+	}
+
+	/** 返回上一级：退掉栈顶那张，回到刚才那张卡；本来就只有一张就整层收起 */
+	function popDetail() {
+		if (cards.length < 2) { dismissCard(); return; }
+		cards.pop();
+		drawCard();
+	}
+
+	/** 关闭弹出层：整层收起（不会退回上一层详情） */
 	function dismissCard() {
 		cards = [];
 		cardClose = null;
@@ -956,18 +985,27 @@ function setActiveTab(id) {
 		setTimeout(function () { dom.card.classList.add('open'); }, 0);
 	}
 
-	/** 弹出详情 / 选择面板，关闭时统一收起该层 */
-	function showCard(title, body) {
+	/** 弹出详情 / 选择面板，关闭时统一收起该层；onBack 有值时标题栏多一个「返回」 */
+	function showCard(title, body, onBack) {
 		dom.card.classList.remove('error');
 		dom.card.hidden = false;
 		cardClose = dismissCard;
 		var head = mk('header', 'card-head');
 		head.appendChild(mk('h2', 'card-title', title));
+		var tools = mk('div', 'card-tools');
+		if (onBack) {
+			var backBtn = mk('button', 'icon-btn', T.common.back);
+			backBtn.type = 'button';
+			backBtn.addEventListener('click', onBack);
+			tools.appendChild(backBtn);
+		}
 		var closeBtn = mk('button', 'icon-btn', T.common.close);
 		closeBtn.type = 'button';
 		closeBtn.addEventListener('click', dismissCard);
-		head.appendChild(closeBtn);
+		tools.appendChild(closeBtn);
+		head.appendChild(tools);
 		fill(dom.card, [head, body]);
+		dom.card.scrollTop = 0;
 		showScrim();
 		setTimeout(function () { dom.card.classList.add('open'); }, 0);
 		return closeBtn;
